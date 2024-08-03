@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "tkdodgere",
+  "version-semver": "2.1.1",
+  "builtin-baseline": "853e515b2b512953a536f411d38f053a89de5b33",
+  "dependencies": [
+    "fmt",
+    "spdlog",
+    "rapidcsv",
+    "simpleini",
+    "directxtk"
+  ],
+  "license": "GPL-3.0-or-later"
+}
