@@ -15,6 +15,7 @@ namespace TKDodge
             Input::InputEventSink::Register();
             animEventHandler::RegisterForPlayer();
             Hooks::install();
+
         }
     }
 } // namespace TKDodge
