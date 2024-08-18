@@ -213,8 +213,6 @@ public:
         const auto      playerState       = a_pc->AsActorState();
         auto            attackState       = playerState->GetAttackState();
 
-        DEBUG("calculated dodge cost for dodge check is {}", CalculatedDodgeCost(a_pc));
-
         return a_pc->GetGraphVariableBool("bIsDodging", bIsDodging) && !bIsDodging && ((attackState == RE::ATTACK_STATE_ENUM::kNone) || isInCancelState(a_pc))
                && (!playerState->IsSprinting() || !settings->useSprintKeyGlobal->value != 0) && (controlMap->IsMovementControlsEnabled() && controlMap->IsFightingControlsEnabled())
                && (!playerState->IsSneaking() || Settings::enableSneakDodge) && playerControls && playerControls->attackBlockHandler
@@ -233,11 +231,11 @@ public:
             DEBUG("cannot dodge");
             return;
         }
-        DEBUG("dodging");
+        
         std::string dodge_event = Settings::defaultDodgeEvent;
         if (!GetDodgeEvent(dodge_event) && !Settings::EnableDodgeInPlace)
             return;
-
+        DEBUG("dodging");
         if (settings->stepDodge) {
             DEBUG("step dodge bool is {}", LogBool(settings->stepDodge));
             DEBUG("step dodge active");
@@ -256,18 +254,35 @@ public:
     {
         const Settings* settings = Settings::GetSingleton();
         float           dodgeCostModifier = 1.0;
+        float           extraDodgeCostMod = 1.0;
         std::string     usedAV            = "DodgeCostModifier";
+        std::string     staggerAV         = "ExtraDodgeCostModifier";
         auto            cost_modifierAV   = Hooks::LookupActorValueByName(usedAV.c_str());
         auto            max_stam          = a_act->AsActorValueOwner()->GetBaseActorValue(RE::ActorValue::kStamina);
+
+        
+        auto stag_cost_mod_AV = Hooks::LookupActorValueByName(staggerAV.c_str());
+
+
         if (a_act->AsActorValueOwner()->GetActorValue(cost_modifierAV) != 0.0000) {
             dodgeCostModifier = a_act->AsActorValueOwner()->GetActorValue(cost_modifierAV);
             DEBUG("AVG installed, dodge cost modifier is {}", dodgeCostModifier);
         }
+        if (a_act->AsActorValueOwner()->GetActorValue(stag_cost_mod_AV) != 0.0000) {
+            extraDodgeCostMod = a_act->AsActorValueOwner()->GetActorValue(stag_cost_mod_AV);
+            DEBUG("AVG installed, extra dodge cost modifier is {}", extraDodgeCostMod);
+        }
 
-        if (settings->usePercentageCostGlobal->value != 0 )
-            return ((max_stam / 100) * settings->DodgeCostGlobal->value) * dodgeCostModifier;
-        else
-            return settings->DodgeCostGlobal->value * dodgeCostModifier;
+        if (settings->usePercentageCostGlobal->value != 0 ){
+            DEBUG("Calculated Dodge Cost is {}", ((max_stam / 100) * settings->DodgeCostGlobal->value) * dodgeCostModifier * extraDodgeCostMod);
+            return ((max_stam / 100) * settings->DodgeCostGlobal->value) * dodgeCostModifier * extraDodgeCostMod;
+        }
+            
+        else{
+            DEBUG("Calculated Dodge Cost is {}", settings->DodgeCostGlobal->value * dodgeCostModifier * extraDodgeCostMod);
+            return settings->DodgeCostGlobal->value * dodgeCostModifier * extraDodgeCostMod;
+        }
+            
     }
 
     void applyDodgeCost()
