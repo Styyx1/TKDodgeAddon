@@ -203,6 +203,21 @@ public:
         return true;
     }
 
+    inline bool IsAnyOfMenuOpen(RE::UI* a_ui, const std::vector<std::string>& a_menuNames)
+    {
+        for (std::string_view menuName : a_menuNames) {
+            if (a_ui->IsMenuOpen(menuName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool IsInMenu(const Settings* a_config, RE::UI* a_ui)
+    {
+        return IsAnyOfMenuOpen(a_ui, a_config->sl1MenuNames);
+    }
+
     // bunch of ugly checks
     inline bool canDodge(RE::PlayerCharacter* a_pc)
     {
@@ -220,7 +235,7 @@ public:
                && (playerState->GetSitSleepState() == RE::SIT_SLEEP_STATE::kNormal && playerState->GetKnockState() == RE::KNOCK_STATE_ENUM::kNormal
                    && playerState->GetFlyState() == RE::FLY_STATE::kNone) && PerkCheck(a_pc)
                && !playerState->IsSwimming() && !isJumping(a_pc) && !a_pc->IsInKillMove()
-               && (a_pc->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) >= CalculatedDodgeCost(a_pc)) && PerkCheck(a_pc) && !a_pc->IsOverEncumbered();
+               && (a_pc->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) >= CalculatedDodgeCost(a_pc)) && PerkCheck(a_pc) && !a_pc->IsOverEncumbered() && !IsInMenu(settings, RE::UI::GetSingleton());
     }
 
     void dodge()
