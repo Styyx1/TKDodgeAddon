@@ -3,3 +3,6 @@ build
 .vs
 .idea
 contrib/Plugin*
+.vscode
+.xmake
+vsxmake2022

@@ -1,26 +1,33 @@
 #include "Hooks.h"
-#include "LoadGame.h"
-#include "Logging.h"
+#include "InputEvents.h"
 #include "Settings.h"
+#include "ui.h"
+#include "AnimationEvents.h"
 
-SKSEPluginLoad(const SKSE::LoadInterface* skse)
+void Listener(SKSE::MessagingInterface::Message *a_msg)
 {
-    InitializeLogging();
+    switch (a_msg->type)
+    {
+    case SKSE::MessagingInterface::kDataLoaded:
+        Config::Settings::crit_dodge_mult.SetValue(1.f);
+        Config::Settings::GetSingleton()->UpdateSettings(true);
+        animEventHandler::RegisterForPlayer();
+        break;
 
-    const auto plugin{ SKSE::PluginDeclaration::GetSingleton() };
-    const auto name{ plugin->GetName() };
-    const auto version{ plugin->GetVersion() };
+    default:
+        break;
+    }
+}
 
-    logger::info("{} {} is loading...", name, version);
+SKSEPluginLoad(const SKSE::LoadInterface *skse)
+{
+    Init(skse, {.trampoline = true});
 
-    Init(skse);
-
-    if (const auto messaging{ SKSE::GetMessagingInterface() }; !messaging->RegisterListener(TKDodge::EventCallback)) {
+    Config::Settings::GetSingleton()->UpdateSettings(false);
+    Menu::RegisterDodgeMenu();
+    if (const auto messaging{SKSE::GetMessagingInterface()}; !messaging->RegisterListener(Listener))
+    {
         return false;
     }
-
-    logger::info("{} has finished loading.", name);
-    logger::info("");
-
     return true;
 }
