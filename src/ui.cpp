@@ -12,7 +12,7 @@ void RegisterDodgeMenu()
     }
     SKSEMenuFramework::SetSection(Titles::MOD_TITLE);
     SKSEMenuFramework::AddSectionItem(Titles::SETTINGS_SEC, Settings::RenderSettings);
-    SKSEMenuFramework::AddInputEvent(Settings::OnInput);
+    //SKSEMenuFramework::AddInputEvent(Settings::OnInput);
     RestoreFromSettings();
 }
 void RestoreFromSettings()
@@ -44,6 +44,8 @@ void RestoreFromSettings()
     dodge_perk_form_ID = set::dodge_perk_form_ID.GetValue();
     on_dodge_spell_form_ID = set::on_dodge_spell_form_ID.GetValue();
     spell_lock_perk_form_ID = set::spell_lock_perk_form_ID.GetValue();
+
+    use_double_tap = set::use_double_tap.GetValue();
 }
 void ResetDefaults()
 {
@@ -59,6 +61,7 @@ void ResetDefaults()
     use_mco_recover_window = false;
     use_perk_lock = false;
     use_percentage_cost = false;
+    use_double_tap = false;
 
     i_frame_duration = 0.3f;
     sprinting_press_duration = 0.5f;
@@ -99,22 +102,23 @@ void ResetDefaults()
     set::dodge_perk_form_ID.SetValue(dodge_perk_form_ID);
     set::on_dodge_spell_form_ID.SetValue(on_dodge_spell_form_ID);
     set::spell_lock_perk_form_ID.SetValue(spell_lock_perk_form_ID);
+    set::use_double_tap.SetValue(use_double_tap);
 
     // Save Settings
-    set::GetSingleton()->UpdateSettings(true);
+    set::UpdateSettings(true);
 }
 void RenderSystem()
 {
-    ImGuiMCP::ImGui::NewLine();
-    ImGuiMCP::ImGui::SeparatorText(Label::system.c_str());
+    ImGuiMCP::NewLine();
+    ImGuiMCP::SeparatorText(Label::system.c_str());
 
-    if (ImGuiMCP::ImGui::Button(Label::save_settings.c_str()))
+    if (ImGuiMCP::Button(Label::save_settings.c_str()))
     {
-        Config::Settings::GetSingleton()->UpdateSettings(true);
+        Config::Settings::UpdateSettings(true);
     }
 
-    ImGuiMCP::ImGui::SameLine();
-    if (ImGuiMCP::ImGui::Button(Label::restore_defaults.c_str()))
+    ImGuiMCP::SameLine();
+    if (ImGuiMCP::Button(Label::restore_defaults.c_str()))
     {
         ResetDefaults();
     }
@@ -128,24 +132,24 @@ void Menu::Settings::DrawHotkeyConfigUI()
     // not really needed but looks better in the menu
     std::transform(key_name.begin(), key_name.end(), key_name.begin(), ::toupper);
 
-    ImGui::Text(std::format("Hotkey: {}", key_name).c_str());
-    ImGui::SameLine();
+    ImGuiMCP::Text(std::format("Hotkey: {}", key_name).c_str());
+    ImGuiMCP::SameLine();
 
     if (!Menu::Settings::capture_key_input)
     {
-        if (ImGui::Button("Rebind"))
+        if (ImGuiMCP::Button("Rebind"))
         {
             Menu::Settings::capture_key_input = true;
             Menu::Settings::Var::dodge_key = 0;
         }
-        ImGui::SameLine();
+        ImGuiMCP::SameLine();
         ux::HelpMarker("Press the desired key to rebind the visibility toggle.");
     }
     else
     {
-        ImGui::Text("Press any key");
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel"))
+        ImGuiMCP::Text("Press any key");
+        ImGuiMCP::SameLine();
+        if (ImGuiMCP::Button("Cancel"))
         {
             Menu::Settings::capture_key_input = false;
             Settings::Var::dodge_key = Config::Settings::dodge_key.GetValue();
@@ -158,91 +162,39 @@ void Menu::Settings::DrawHotkeyConfigUI()
     }
 }
 
-bool __stdcall Menu::Settings::OnInput(RE::InputEvent *event)
-{
-    bool blockThisUserInput = false;
-
-    if (Menu::Settings::capture_key_input)
-    {
-        for (auto e = event; e; e = e->next)
-        {
-            const auto button = e->AsButtonEvent();
-            if (!button || !button->HasIDCode())
-                continue;
-
-            if (!button->IsDown())
-                continue;
-
-            uint32_t key = button->GetIDCode();
-
-            switch (button->GetDevice()) {
-            case RE::INPUT_DEVICE::kMouse:
-                key += SKSE::InputMap::kMacro_MouseButtonOffset;
-                break;
-            case RE::INPUT_DEVICE::kGamepad:
-                key = SKSE::InputMap::GamepadMaskToKeycode(key);
-                break;
-            default:
-                break;
-            }
-            Menu::Settings::Var::dodge_key = key;
-            blockThisUserInput = true;
-        }
-
-    }
-   
-    if (const auto button = event->AsButtonEvent())
-    {
-        auto id = button->GetIDCode();
-        if(button->device == RE::INPUT_DEVICE::kGamepad)
-        {
-            id = SKSE::InputMap::GamepadMaskToKeycode(id);
-        }
-        if (id == Config::Settings::dodge_key.GetValue())
-        {            
-            if(button->IsDown())
-                Utility::dodge();
-            if(button->device == RE::INPUT_DEVICE::kGamepad){
-                if(button->GetIDCode() == SKSE::InputMap::GamepadMaskToKeycode(Config::Settings::dodge_key.GetValue())){
-                    Utility::dodge();
-                }
-            }
-        }
-    }
-    return blockThisUserInput;
-}
-
 void __stdcall Menu::Settings::RenderSettings()
 {
     using set = Config::Settings;
     FontAwesome::PushSolid();
-    ImGui::Text(Menu::Titles::MOD_TITLE.c_str());
-    ImGui::NewLine();
+    ImGuiMCP::Text(Menu::Titles::MOD_TITLE.c_str());
+    ImGuiMCP::NewLine();
 
     SettingCheckbox(Label::enable_sneak_key_dodge.c_str(), Var::enable_sneak_key_dodge, set::enable_sneak_key_dodge,
                     Tool::enable_sneak_key_dodge.c_str());
-    ImGui::SameLine();
+    ImGuiMCP::SameLine();
     SettingCheckbox(Label::enable_dodge_in_place.c_str(), Var::enable_dodge_in_place, set::enable_dodge_in_place,
                     Tool::enable_dodge_in_place.c_str());
 
     SettingCheckbox(Label::step_dodge.c_str(), Var::step_dodge, set::step_dodge, Tool::step_dodge.c_str());
-    ImGui::SameLine();
+    ImGuiMCP::SameLine();
     SettingCheckbox(Label::enable_sneak_dodge.c_str(), Var::enable_sneak_dodge, set::enable_sneak_dodge,
                     Tool::enable_sneak_dodge.c_str());
 
     SettingCheckbox(Label::enable_dodge_attack_cancel.c_str(), Var::enable_dodge_attack_cancel,
                     set::enable_dodge_attack_cancel, Tool::enable_dodge_attack_cancel.c_str());
-    ImGui::SameLine();
+    ImGuiMCP::SameLine();
     SettingCheckbox(Label::use_sprint_key.c_str(), Var::use_sprint_key, set::use_sprint_key,
                     Tool::use_sprint_key.c_str());
 
     SettingCheckbox(Label::use_mco_recover_window.c_str(), Var::use_mco_recover_window, set::use_mco_recover_window,
                     Tool::use_mco_recover_window.c_str());
-    ImGui::SameLine();
+    ImGuiMCP::SameLine();
     SettingCheckbox(Label::use_perk_lock.c_str(), Var::use_perk_lock, set::use_perk_lock, Tool::use_perk_lock.c_str());
 
     SettingCheckbox(Label::use_percentage_cost.c_str(), Var::use_percentage_cost, set::use_percentage_cost,
                     Tool::use_percentage_cost.c_str());
+    ImGuiMCP::SameLine();
+    SettingCheckbox(Label::use_double_tap.c_str(), Var::use_double_tap, set::use_double_tap, Tool::use_double_tap.c_str());
 
     SettingSlider(Label::i_frame_duration.c_str(), Var::i_frame_duration, 0.0f, 4.0f, "%.2f sec", set::i_frame_duration,
                   Tool::i_frame_duration.c_str());
@@ -254,25 +206,7 @@ void __stdcall Menu::Settings::RenderSettings()
                   Tool::dodge_cost.c_str());
 
     DrawHotkeyConfigUI();
-
     RenderSystem();
-
-    /*
-
-
-
-inline std::string default_dodge_event;
-
-inline std::string dodge_key;
-
-
-inline std::string perk_mod_name;
-inline std::string spell_mod_name;
-
-inline uint32_t dodge_perk_form_ID;
-inline uint32_t on_dodge_spell_form_ID;
-inline uint32_t spell_lock_perk_form_ID;
-    */
 
     FontAwesome::Pop();
 }

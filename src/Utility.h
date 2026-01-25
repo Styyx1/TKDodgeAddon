@@ -1,13 +1,12 @@
 #pragma once
-#include <Hooks.h>
 #include <Settings.h>
 
 #define PI 3.14159265f
 #define PI8 0.39269908f
 
-class Utility : public REX::Singleton<Utility>
+namespace Utility
 {
-  public:
+
     inline static RE::NiPoint2 Vec2Rotate(const RE::NiPoint2 &vec, float angle)
     {
         RE::NiPoint2 ret;
@@ -83,24 +82,6 @@ class Utility : public REX::Singleton<Utility>
         return false;
     }
 
-    inline static bool ActorHasActiveMagicEffect(RE::Actor *a_actor, const RE::EffectSetting *a_effect)
-    {
-        const auto activeEffects = a_actor->GetActiveEffectList();
-        const RE::EffectSetting *setting = nullptr;
-        for (const auto &effect : *activeEffects)
-        {
-            setting = effect ? effect->GetBaseObject() : nullptr;
-            if (setting)
-            {
-                if (setting == a_effect)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     inline static bool PerkCheck(const RE::Actor *a_actor)
     {
         using namespace Config;
@@ -131,10 +112,10 @@ class Utility : public REX::Singleton<Utility>
         if (!Config::Settings::use_mco_recover_window.GetValue())
             return true;
         bool transition = false;
-        bool recovery = false;
+        int recovery = 0;
         bool attackReady = false;
         bool hasTransition = a_actor->GetGraphVariableBool("MCO_Transition", transition) && transition;
-        bool hasRecovery = a_actor->GetGraphVariableBool("MCO_IsInRecovery", recovery) && recovery;
+        int hasRecovery = a_actor->GetGraphVariableInt("MCO_IsInRecovery", recovery) && recovery;
         a_actor->GetGraphVariableBool("IsAttackReady", attackReady);
 
         REX::DEBUG("hasTransition: {}, hasRecovery: {}, attackReady: {}", hasTransition, hasRecovery, attackReady);
@@ -211,6 +192,46 @@ class Utility : public REX::Singleton<Utility>
         return MiscUtil::IsAnyOfMenuOpen(RE::UI::GetSingleton(), Config::Forms::GetSingleton()->MenuNames);
     }
 
+    static inline float CalculatedDodgeCost(const RE::Actor *a_act)
+    {
+
+        float dodgeCostModifier = 1.0;
+        float extraDodgeCostMod = 1.0;
+        const std::string usedAV = "DodgeCostModifier";
+        const std::string extraDodgeAV = "ExtraDodgeCostModifier";
+        const auto cost_modifierAV =  AVUtil::LookupActorValueByName(MOD::USED_AV.data());
+        const auto max_stam = a_act->GetBaseActorValue(RE::ActorValue::kStamina);
+
+        const auto stag_cost_mod_AV = AVUtil::LookupActorValueByName(MOD::EXTRA_DODGE_AV.data());
+
+        if (a_act->GetActorValue(cost_modifierAV) != 0.0000)
+        {
+            dodgeCostModifier = a_act->GetActorValue(cost_modifierAV);
+            REX::DEBUG("AVG installed, dodge cost modifier is {}", dodgeCostModifier);
+        }
+        if (a_act->GetActorValue(stag_cost_mod_AV) != 0.0000)
+        {
+            extraDodgeCostMod = a_act->GetActorValue(stag_cost_mod_AV);
+            REX::DEBUG("AVG installed, extra dodge cost modifier is {}", extraDodgeCostMod);
+        }
+        float dodge_cost = Config::Settings::dodge_cost.GetValue();
+        if (Config::Settings::use_percentage_cost.GetValue())
+        {
+
+            REX::DEBUG("Calculated Dodge Cost is {}",
+                       ((max_stam / 100) * dodge_cost) * dodgeCostModifier * extraDodgeCostMod);
+
+            return ((max_stam / 100) * dodge_cost) * dodgeCostModifier * extraDodgeCostMod;
+        }
+
+        else
+        {
+            REX::DEBUG("Calculated Dodge Cost is {}",
+                dodge_cost * dodgeCostModifier * extraDodgeCostMod);
+            return dodge_cost * dodgeCostModifier * extraDodgeCostMod;
+        }
+    }
+
     // bunch of ugly checks
     inline static bool canDodge(const RE::PlayerCharacter *a_pc)
     {
@@ -264,45 +285,7 @@ class Utility : public REX::Singleton<Utility>
         pc->NotifyAnimationGraph(dodge_event);                                    // Send TK Dodge Event
     }
 
-    static inline float CalculatedDodgeCost(const RE::Actor *a_act)
-    {
 
-        float dodgeCostModifier = 1.0;
-        float extraDodgeCostMod = 1.0;
-        const std::string usedAV = "DodgeCostModifier";
-        const std::string extraDodgeAV = "ExtraDodgeCostModifier";
-        const auto cost_modifierAV = ActorUtil::LookupActorValueByName(MOD::USED_AV.data());
-        const auto max_stam = a_act->GetBaseActorValue(RE::ActorValue::kStamina);
-
-        const auto stag_cost_mod_AV = ActorUtil::LookupActorValueByName(MOD::EXTRA_DODGE_AV.data());
-
-        if (a_act->GetActorValue(cost_modifierAV) != 0.0000)
-        {
-            dodgeCostModifier = a_act->GetActorValue(cost_modifierAV);
-            REX::DEBUG("AVG installed, dodge cost modifier is {}", dodgeCostModifier);
-        }
-        if (a_act->GetActorValue(stag_cost_mod_AV) != 0.0000)
-        {
-            extraDodgeCostMod = a_act->GetActorValue(stag_cost_mod_AV);
-            REX::DEBUG("AVG installed, extra dodge cost modifier is {}", extraDodgeCostMod);
-        }
-        float dodge_cost = Config::Settings::dodge_cost.GetValue();
-        if (Config::Settings::use_percentage_cost.GetValue())
-        {
-            
-            REX::DEBUG("Calculated Dodge Cost is {}",
-                       ((max_stam / 100) * dodge_cost) * dodgeCostModifier * extraDodgeCostMod);
-
-            return ((max_stam / 100) * dodge_cost) * dodgeCostModifier * extraDodgeCostMod;
-        }
-
-        else
-        {
-            REX::DEBUG("Calculated Dodge Cost is {}",
-                dodge_cost * dodgeCostModifier * extraDodgeCostMod);
-            return dodge_cost * dodgeCostModifier * extraDodgeCostMod;
-        }
-    }
 
     static inline void applyDodgeCost()
     {
@@ -310,5 +293,5 @@ class Utility : public REX::Singleton<Utility>
         {
             pc->DamageActorValue(RE::ActorValue::kStamina, -CalculatedDodgeCost(pc));
         }
-    }    
+    }
 };

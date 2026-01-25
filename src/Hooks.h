@@ -7,7 +7,21 @@ namespace Hooks
 
     private:
         static void ProcessButton(RE::SprintHandler* a_this, RE::ButtonEvent* a_event, RE::PlayerControlsData* a_data);
-        inline static REL::HookVFT _SprintHandlerHook{ RE::VTABLE_SprintHandler[0], 0x4, ProcessButton };
+        inline static REL::HookVFT _sprintHandlerHook{ RE::VTABLE_SprintHandler[0], 0x4, ProcessButton };
+    };
+
+    struct SneakHandlerHook
+    {
+    private:
+        static void ProcessButton(RE::SneakHandler* a_this, RE::ButtonEvent* a_event,RE::PlayerControlsData* a_data);
+        inline static REL::HookVFT _sneakHandlerHook{ RE::VTABLE_SneakHandler[0], 0x4, ProcessButton };
+    };
+
+    struct PlayerUpdateLoop
+    {
+    private:
+        static void PlayerUpdate(RE::PlayerCharacter* a_this, float a_delta);
+        inline static REL::HookVFT _playerUpdateLoopHook{ RE::VTABLE_PlayerCharacter[0], 0xAD, PlayerUpdate };
     };
 
 } // namespace Hooks

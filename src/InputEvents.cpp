@@ -1,31 +1,18 @@
 #include "InputEvents.h"
-#include "AnimationEvents.h"
 #include "Settings.h"
-#include "Utility.h"
 #include "ui.h"
+#include "dodging.h"
 
 
-namespace Events{
+namespace Events
+{
     void InputEvent::RegisterInput(){
-        if (auto manager = RE::BSInputDeviceManager::GetSingleton()) {
+        if (const auto manager = RE::BSInputDeviceManager::GetSingleton()) {
             manager->AddEventSink(this);
             REX::INFO("Registered for {}", typeid(RE::InputEvent).name());
         }
         else {
             REX::ERROR("Failed to register input event.");
-        }
-    }
-
-    void InputEvent::RegisterHotkeys()
-    {
-        
-    }
-
-    void InputEvent::DoDodge(const hotkeys::KeyCombination* key)
-    {
-        if (key->IsTriggered()) {
-            Utility* util = Utility::GetSingleton();
-            util->dodge();
         }
     }
 
@@ -39,7 +26,7 @@ namespace Events{
         {
             for (auto e = *a_event; e; e = e->next)
             {
-                auto button = e->AsButtonEvent();
+                const auto button = e->AsButtonEvent();
                 if (!button || !button->HasIDCode())
                     continue;
 
@@ -60,13 +47,38 @@ namespace Events{
                 }
                 Menu::Settings::Var::dodge_key = key;
             }
+            return EventResult::kContinue;
+        }
+        else
+        {
+            for (auto e = *a_event; e; e = e->next)
+            {
+                const auto button = e->AsButtonEvent();
+                if (!button || !button->IsDown())
+                    continue;
+
+                uint32_t id = button->GetIDCode();
+
+                switch (button->GetDevice()) {
+                case RE::INPUT_DEVICE::kMouse:
+                    id += SKSE::InputMap::kMacro_MouseButtonOffset;
+                    break;
+                case RE::INPUT_DEVICE::kGamepad:
+                    id = SKSE::InputMap::GamepadMaskToKeycode(id);
+                    break;
+                default:
+                    break;
+                }
+
+                if (id != Config::Settings::dodge_key.GetValue())
+                    continue;
+
+                Dodge::OnInput();
+            }
         }
 
 
 
-        dodge_action_key.Process(a_event); 
-
         return EventResult::kContinue;
     }
-
 }

@@ -1,6 +1,7 @@
 #pragma once
 
-struct MOD {
+struct MOD
+{
 	inline static constexpr std::string_view TOML_PATH_DEFAULT = "Data/SKSE/Plugins/tk-dodge.toml";
 	inline static constexpr std::string_view TOML_PATH_CUSTOM = "Data/SKSE/Plugins/tk-dodge_custom.toml";
 	inline static constexpr std::string_view SECTION_SETTINGS = "Settings";
@@ -22,6 +23,4 @@ struct MOD {
 
 	inline static constexpr std::string_view USED_AV = "DodgeCostModifier";
 	inline static constexpr std::string_view EXTRA_DODGE_AV = "ExtraDodgeCostModifier";
-
-
 };

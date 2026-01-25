@@ -29,15 +29,14 @@ constexpr uint32_t hash(const char* data, const size_t size) noexcept
 
 RE::BSEventNotifyControl animEventHandler::HookedProcessEvent(RE::BSAnimationGraphEvent& a_event, RE::BSTEventSource<RE::BSAnimationGraphEvent>* src)
 {
-    FnProcessEvent fn = fnHash.at(*(uint64_t*)this);
+    const FnProcessEvent fn = fnHash.at(*reinterpret_cast<uint64_t*>(this));
     // DEBUG(" Event {} recieved", a_event.tag.data());
 
     // DEBUG(" Payload {} recieved", a_event.payload.c_str());
     // Settings* settings = Settings::GetSingleton();
-    auto util = Utility::GetSingleton();
 
     if (a_event.tag == "TKDR_DodgeStart") {
-        util->applyDodgeCost();
+        Utility::applyDodgeCost();
     }
 
     return fn ? (this->*fn)(a_event, src) : RE::BSEventNotifyControl::kContinue;
