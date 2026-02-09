@@ -17,61 +17,6 @@ namespace Hooks
         inline static REL::HookVFT _sneakHandlerHook{ RE::VTABLE_SneakHandler[0], 0x4, ProcessButton };
     };
 
-    struct AttackBuffer : REX::Singleton<AttackBuffer>
-    {
-        using Clock = std::chrono::steady_clock;
-        using TimePoint = Clock::time_point;
-
-
-        static bool IsBufferActive();
-        static void ResetBuffer();
-        static void PushActive();
-        static void OnUpdate(RE::PlayerCharacter* a_this);
-
-    private:
-        bool m_buffered = false;
-        TimePoint queuedAt{Clock::duration::zero()};
-        static constexpr auto INPUT_BUFFER_TIME = std::chrono::milliseconds(5000);
-        void push()
-        {
-            if (!m_buffered)
-            {
-                queuedAt = Clock::now();
-                m_buffered = true;
-            }
-        }
-
-        [[nodiscard]] bool expired() const
-        {
-            return m_buffered && (Clock::now() - queuedAt) >= INPUT_BUFFER_TIME;
-        }
-
-        [[nodiscard]] bool active() const
-        {
-            return m_buffered && !expired();
-        }
-
-        void consume()
-        {
-            m_buffered = false;
-        }
-
-        void clear_if_expired()
-        {
-            if (expired())
-                m_buffered = false;
-        }
-
-    };
-
-
-    struct AttackHandler
-    {
-        private:
-        static void ProcessButton(RE::AttackBlockHandler* a_this, RE::ButtonEvent* a_event, RE::PlayerControlsData* a_data);
-        inline static REL::HookVFT _attackBlockHandlerHook{RE::VTABLE_AttackBlockHandler[0], 0x4, ProcessButton};
-    };
-
     struct PlayerUpdateLoop
     {
     private:
