@@ -1,0 +1,22 @@
+{
+    __meta__ = {
+        version = "1.0"
+    },
+    ["windows|x64"] = {
+        ["cmake#f56260b5"] = {
+            version = "3.31.6-msvc6"
+        },
+        ["glaze#f56260b5"] = {
+            version = "v6.1.0"
+        },
+        ["ninja#f56260b5"] = {
+            version = "1.12.1"
+        },
+        ["spdlog#09c8c173"] = {
+            version = "v1.16.0"
+        },
+        ["toml11#f56260b5"] = {
+            version = "v4.4.0"
+        }
+    }
+}

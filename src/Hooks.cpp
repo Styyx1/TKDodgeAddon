@@ -2,56 +2,127 @@
 #include "InputEvents.h"
 #include "Settings.h"
 #include "Utility.h"
+#include "dodging.h"
 
 namespace Hooks
 {
-    void install()
-    {
-        INFO("Hooking...");
-
-
-
-
-        SprintHandlerHook::Hook();
-
-        INFO("...success");
-    }
-
     static bool bStoppingSprint = false;
+    static bool bStopSneak = false;
 
     void SprintHandlerHook::ProcessButton(RE::SprintHandler* a_this, RE::ButtonEvent* a_event, RE::PlayerControlsData* a_data)
     {
-        const Settings* settings = Settings::GetSingleton();
-        if (settings->useSprintKeyGlobal->value != 0) {
-            auto playerCharacter = RE::PlayerCharacter::GetSingleton();
-            auto userEvent       = a_event->QUserEvent();
-            auto userEvents      = RE::UserEvents::GetSingleton();
+        if (Config::Settings::use_sprint_key.GetValue()) {
+            const auto playerCharacter = RE::PlayerCharacter::GetSingleton();
+            const auto userEvent       = a_event->QUserEvent();
 
-            if (userEvent == userEvents->sprint) {
-                if (a_event->IsDown() && (playerCharacter->GetPlayerRuntimeData().playerFlags.isSprinting)) { // stopping sprint
-                    DEBUG("key pressesd while pc is sprinting - stopping sprint");
+            if (const auto userEvents      = RE::UserEvents::GetSingleton(); userEvent == userEvents->sprint) {
+                if (a_event->IsDown() && (playerCharacter->playerFlags.isSprinting)) { // stopping sprint
                     bStoppingSprint = true;
                 }
-                else if (a_event->HeldDuration() < Settings::SprintingPressDuration) { // TODO:ADD THIS to settings
+                else if (a_event->HeldDuration() < Config::Settings::sprinting_press_duration.GetValue()) {
                     if (a_event->IsUp()) {
-                        DEBUG("key lifted and was pressed less then SprintingPressDuration - dodging");
-                        auto util = Utility::GetSingleton();
-                        util->dodge();
+                        if (!Utility::IsInMenu())
+                            Dodge::OnInput();
                         bStoppingSprint = false;
                     }
                     return;
                 }
-                else if (playerCharacter && (!playerCharacter->GetPlayerRuntimeData().playerFlags.isSprinting && !bStoppingSprint)) {
-                    DEBUG("player not sprinting and StoopingSprint flag is false - ressetting heldDownSecs to 0");
-                    a_event->GetRuntimeData().heldDownSecs = 0.f;
+                else if (playerCharacter && (!playerCharacter->playerFlags.isSprinting && !bStoppingSprint)) {
+                    a_event->heldDownSecs = 0.f;
                 }
                 else if (a_event->IsUp()) {
-                    DEBUG("key lifted - resuming sprint");
                     bStoppingSprint = false;
                 }
             }
         }
 
-        _ProcessButton(a_this, a_event, a_data);
+        _sprintHandlerHook(a_this, a_event, a_data);
+    }
+
+    void SneakHandlerHook::ProcessButton(RE::SneakHandler* a_this, RE::ButtonEvent* a_event, RE::PlayerControlsData* a_data)
+    {
+        if (Config::Settings::enable_sneak_key_dodge.GetValue()) {
+            const auto playerCharacter = RE::PlayerCharacter::GetSingleton();
+            const auto userEvent       = a_event->QUserEvent();
+
+            if (const auto userEvents      = RE::UserEvents::GetSingleton(); userEvent == userEvents->sneak) {
+                if (a_event->IsDown() && (playerCharacter->IsSneaking())) { // stopping sneak
+                    bStopSneak = true;
+                }
+                else if (a_event->HeldDuration() < Config::Settings::sneaking_press_duration.GetValue()) {
+                    if (a_event->IsUp()) {
+                        if (!Utility::IsInMenu())
+                            Dodge::OnInput();
+                        bStopSneak = false;
+                    }
+                    return;
+                }
+                else if (playerCharacter && (!playerCharacter->IsSneaking() && !bStopSneak)) {
+                    a_event->heldDownSecs = 0.f;
+                }
+                else if (a_event->IsUp()) {
+                    bStopSneak= false;
+                }
+            }
+        }
+        _sneakHandlerHook(a_this, a_event, a_data);
+    }
+
+
+    bool AttackBuffer::IsBufferActive()
+    {
+        return GetSingleton()->active();
+    }
+
+    void AttackBuffer::ResetBuffer()
+    {
+        REX::DEBUG("clear "
+                   "is called");
+         return GetSingleton()->clear_if_expired();
+    }
+
+    void AttackBuffer::PushActive()
+    {
+        REX::DEBUG("Push active is called");
+        GetSingleton()->push();
+    }
+
+    void AttackHandler::ProcessButton(RE::AttackBlockHandler* a_this, RE::ButtonEvent* a_event, RE::PlayerControlsData* a_data)
+    {
+        REX::DEBUG("Inside attack handler");
+        if (a_event->IsDown() || AttackBuffer::IsBufferActive())
+        {
+            AttackBuffer::PushActive();
+            return _attackBlockHandlerHook(a_this, a_event, a_data);
+        }
+        AttackBuffer::ResetBuffer();
+
+        _attackBlockHandlerHook(a_this, a_event, a_data);
+    }
+
+    void AttackBuffer::OnUpdate(RE::PlayerCharacter* a_this)
+    {
+        GetSingleton()->clear_if_expired();
+
+        if (!GetSingleton()->active())
+            return;
+
+        // This is your "CanAttack" gate
+        const bool accepted = a_this->NotifyAnimationGraph("attackStart");
+
+        REX::DEBUG("ATTACK ATTEMPT → accepted: {}", accepted);
+
+        GetSingleton()->consume();
+    }
+
+    void PlayerUpdateLoop::PlayerUpdate(RE::PlayerCharacter* a_this, float a_delta)
+    {
+        Dodge::Update(a_this);
+        if (!a_this->IsAttacking())
+            a_this->SetGraphVariableBool("DodgeCancelEnabled", true);
+
+        AttackBuffer::OnUpdate(a_this);
+
+        _playerUpdateLoopHook(a_this, a_delta);
     }
 } // namespace Hooks

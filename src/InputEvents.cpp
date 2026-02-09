@@ -1,63 +1,54 @@
 #include "InputEvents.h"
-#include "AnimationEvents.h"
 #include "Settings.h"
+#include "ui.h"
+#include "dodging.h"
 #include "Utility.h"
-#include <CLIBUtil/Key.h>
 
-namespace
+namespace Events
 {
-    class HotkeyContext
-    {
-    public:
-        explicit HotkeyContext(const Settings* settings) : hotkey(settings->DodgeKeyGlobal->value) {}
-
-        void Update(const RE::ButtonEvent* a_button)
-        {
-            if (!a_button->HasIDCode()) {
-                return;
-            }
-
-            if (a_button->IsPressed() && !a_button->IsHeld()) {
-                auto key = CLib::ParseKey(a_button->GetIDCode(), a_button->GetDevice());
-
-                hotkey.Update(key);
-            }
+    void InputEvent::RegisterInput(){
+        if (const auto manager = RE::BSInputDeviceManager::GetSingleton()) {
+            manager->AddEventSink(this);
+            REX::INFO("Registered for {}", typeid(RE::InputEvent).name());
         }
-
-        void Finalize(Input::InputEventSink* app)
-        {
-            for (std::uint32_t count = 2; count > 0; --count) {
-                bool done = false;
-                if (hotkey.IsActive()) {
-                    Utility* util = Utility::GetSingleton();
-                    logger::debug("key was pressed");
-                    util->dodge();
-                    logger::debug("dodged");
-                    done = true;
-                }
-                if (done) {
-                    break;
-                }
-            }
-        }
-
-    private:
-        CLib::Key hotkey;
-    };
-} // namespace
-
-void Input::HotkeyManager::Process(const RE::InputEvent* const* a_event)
-{
-    auto config = Settings::GetSingleton();
-
-    HotkeyContext ctx{ config };
-
-    for (auto event = *a_event; event; event = event->next) {
-        if (auto button = event->AsButtonEvent()) {
-            ctx.Update(button);
+        else {
+            REX::ERROR("Failed to register input event.");
         }
     }
-    auto app = Input::InputEventSink::GetSingleton();
 
-    ctx.Finalize(app);
+    EventResult InputEvent::ProcessEvent(RE::InputEvent* const* a_event, RE::BSTEventSource<RE::InputEvent*>*)
+    {
+        if(!a_event)
+        {
+            return EventResult::kContinue;
+        }
+
+        for (auto e = *a_event; e; e = e->next)
+        {
+            const auto button = e->AsButtonEvent();
+
+            if (!button || !button->IsDown())
+                continue;
+
+            uint32_t id = button->GetIDCode();
+
+            switch (button->GetDevice()) {
+            case RE::INPUT_DEVICE::kMouse:
+                id += SKSE::InputMap::kMacro_MouseButtonOffset;
+                break;
+            case RE::INPUT_DEVICE::kGamepad:
+                id = SKSE::InputMap::GamepadMaskToKeycode(id);
+                break;
+            default:
+                break;
+            }
+
+            if (id != Config::Settings::dodge_key.GetValue())
+                continue;
+
+            if (!Utility::IsInMenu())
+                Dodge::OnInput();
+        }
+        return EventResult::kContinue;
+    }
 }
