@@ -24,16 +24,12 @@ namespace Config
         inline static REX::TOML::Bool use_mco_recover_window{SECTION_SETTINGS, "bUseMCORecoverWindow", false};
 
         inline static REX::TOML::Bool use_perk_lock{SECTION_SETTINGS, "bUsePerkLock", false};
-        inline static REX::TOML::F32 crit_dodge_mult{SECTION_SETTINGS, "fCritDodgeMult", 0.66f};
-        inline static REX::TOML::Bool use_crit_dodge{SECTION_SETTINGS, "bUseCritDodge", false};
         inline static REX::TOML::Bool use_percentage_cost{SECTION_SETTINGS, "bUsePercentageCost", false};
 
-        inline static REX::TOML::Str perk_mod_name{SECTION_FORMS, "sPerkModName", std::string()};
-        inline static REX::TOML::Str spell_mod_name{SECTION_FORMS, "sSpellModName", std::string()};
+        inline static REX::TOML::Str dodge_perk_ID {SECTION_FORMS, "sDodgeRequiredPerkID", std::string("TKDodgeAddon.esp|0x809")};
+        inline static REX::TOML::Str on_dodge_spell_ID{SECTION_FORMS, "sOnDodgeSpellID", std::string("OnDodgeDummySpell")};
+        inline static REX::TOML::Str on_dodge_spell_perk_ID{SECTION_FORMS, "sOnDodgeSpellRequiredPerkID", std::string("TKDodgeAddon.esp|0x80F")};
 
-        inline static REX::TOML::U32 dodge_perk_form_ID{SECTION_FORMS, "uDodgePerkFormID", uint32_t{0x0}};
-        inline static REX::TOML::U32 on_dodge_spell_form_ID{SECTION_FORMS, "uOnDodgeSpellFormID", uint32_t{0x0}};
-        inline static REX::TOML::U32 spell_lock_perk_form_ID{SECTION_FORMS, "uSpellLockPerkFormID", uint32_t{0x0}};
 
 
         static inline void UpdateSettings(const bool a_save) noexcept
@@ -88,26 +84,32 @@ namespace Config
             dummySpellLockPerk = dh->LookupForm<RE::BGSPerk>(DUMMY_SPELL_LOCK_PERK_FORMID, MOD_NAME);
 
             // Load Dynamic Forms
-            if (Settings::dodge_perk_form_ID.GetValue() != 0x0 && !Settings::perk_mod_name.GetValue().empty())
+            if (!Settings::dodge_perk_ID.GetValue().empty())
             {
-                ActualDodgePerk = dh->LookupForm<RE::BGSPerk>(Settings::dodge_perk_form_ID.GetValue(),
-                                                              Settings::perk_mod_name.GetValue());
+                RE::TESForm* form = FormUtil::GetFormFromString(Settings::dodge_perk_ID.GetValue());
+                ActualDodgePerk = form ? form->As<RE::BGSPerk>() : nullptr;
                 if (!ActualDodgePerk)
                     REX::ERROR("Dodge perk lookup failed, please check your config file");
+                else
+                    REX::INFO("Dodge perk is: {}", ActualDodgePerk->GetName());
             }
-            if (Settings::spell_lock_perk_form_ID.GetValue() != 0x0 && !Settings::perk_mod_name.GetValue().empty())
+            if (!Settings::on_dodge_spell_perk_ID.GetValue().empty())
             {
-                SpellLockPerk = dh->LookupForm<RE::BGSPerk>(Settings::spell_lock_perk_form_ID.GetValue(),
-                                                            Settings::perk_mod_name.GetValue());
+                RE::TESForm* form = FormUtil::GetFormFromString(Settings::on_dodge_spell_perk_ID.GetValue());
+                SpellLockPerk = form ? form->As<RE::BGSPerk>() : nullptr;
                 if (!SpellLockPerk)
                     REX::ERROR("Spell Lock perk lookup failed, please check your config file");
+                else
+                    REX::INFO("Spell lock is: {}", SpellLockPerk->GetName());
             }
-            if (Settings::on_dodge_spell_form_ID.GetValue() != 0x0 && !Settings::spell_mod_name.GetValue().empty())
+            if (!Settings::on_dodge_spell_ID.GetValue().empty())
             {
-                onDodgeSpell = dh->LookupForm<RE::SpellItem>(Settings::on_dodge_spell_form_ID.GetValue(),
-                                                   Settings::spell_mod_name.GetValue());
+                RE::TESForm* form = FormUtil::GetFormFromString(Settings::on_dodge_spell_ID.GetValue());
+                onDodgeSpell = form ? form->As<RE::SpellItem>() : nullptr;
                 if (!onDodgeSpell)
                     REX::ERROR("On Dodge spell lookup failed, please check your config file");
+                else
+                    REX::INFO("OnDodge Spell is: {}", onDodgeSpell->GetName());
             }
             TDMGlobal = RE::TESForm::LookupByEditorID<RE::TESGlobal>("TDM_DirectionalMovement");
         };

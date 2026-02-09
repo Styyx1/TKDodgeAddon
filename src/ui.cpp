@@ -39,13 +39,6 @@ void RestoreFromSettings()
     use_perk_lock = set::use_perk_lock.GetValue();
     use_percentage_cost = set::use_percentage_cost.GetValue();
 
-    perk_mod_name = set::perk_mod_name.GetValue();
-    spell_mod_name = set::spell_mod_name.GetValue();
-
-    dodge_perk_form_ID = set::dodge_perk_form_ID.GetValue();
-    on_dodge_spell_form_ID = set::on_dodge_spell_form_ID.GetValue();
-    spell_lock_perk_form_ID = set::spell_lock_perk_form_ID.GetValue();
-
     use_double_tap = set::use_double_tap.GetValue();
 }
 void ResetDefaults()
@@ -98,12 +91,6 @@ void ResetDefaults()
     set::use_perk_lock.SetValue(use_perk_lock);
     set::use_percentage_cost.SetValue(use_percentage_cost);
 
-    set::perk_mod_name.SetValue(perk_mod_name);
-    set::spell_mod_name.SetValue(spell_mod_name);
-
-    set::dodge_perk_form_ID.SetValue(dodge_perk_form_ID);
-    set::on_dodge_spell_form_ID.SetValue(on_dodge_spell_form_ID);
-    set::spell_lock_perk_form_ID.SetValue(spell_lock_perk_form_ID);
     set::use_double_tap.SetValue(use_double_tap);
 
     // Save Settings

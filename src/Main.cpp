@@ -11,9 +11,8 @@ void Listener(SKSE::MessagingInterface::Message *a_msg)
         Events::InputEvent::GetSingleton()->RegisterInput();
         break;
     case SKSE::MessagingInterface::kDataLoaded:
-        Config::Settings::crit_dodge_mult.SetValue(1.f);
-        Config::Settings::UpdateSettings(true);
         animEventHandler::RegisterForPlayer();
+        Config::Forms::LoadForms();
         break;
 
     default:
