@@ -79,6 +79,7 @@ namespace Menu
             inline std::string step_dodge = "Toggle Step Dodge";
             inline std::string enable_sneak_dodge = "Enable Dodge while Sneaking";
             inline std::string enable_dodge_attack_cancel = "Dodge to cancel Attacks";
+            inline std::string only_cancel_light = "Only Light Attack Cancel";
             inline std::string i_frame_duration = "iFrame Duration";
             inline std::string default_dodge_event = "Default Dodge Event";
             inline std::string sprinting_press_duration = "Sprint Key Press Duration";
@@ -108,6 +109,7 @@ namespace Menu
             inline std::string step_dodge = "Toggle Step Dodge";
             inline std::string enable_sneak_dodge = "Toggle Dodge while Sneaking";
             inline std::string enable_dodge_attack_cancel = "Toggle Dodge to cancel Attacks";
+            inline std::string only_cancel_light = "Cancel only light attacks if canceling is enabled";
             inline std::string i_frame_duration = "Duration of invincibilty frames";
             inline std::string default_dodge_event = "Set the default dodge Event";
             inline std::string sprinting_press_duration = "Minimum duration of sprint key press to not dodge and sprint instead";
@@ -138,6 +140,7 @@ namespace Menu
             inline bool step_dodge;
             inline bool enable_sneak_dodge;
             inline bool enable_dodge_attack_cancel;
+            inline bool only_cancel_light;
             inline float i_frame_duration;
             inline std::string default_dodge_event;
             inline float sprinting_press_duration;

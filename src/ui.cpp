@@ -12,7 +12,7 @@ void RegisterDodgeMenu()
     }
     SKSEMenuFramework::SetSection(Titles::MOD_TITLE);
     SKSEMenuFramework::AddSectionItem(Titles::SETTINGS_SEC, Settings::RenderSettings);
-    //SKSEMenuFramework::AddInputEvent(Settings::OnInput);
+    SKSEMenuFramework::AddInputEvent(Settings::OnInput);
     RestoreFromSettings();
 }
 void RestoreFromSettings()
@@ -25,6 +25,7 @@ void RestoreFromSettings()
     step_dodge = set::step_dodge.GetValue();
     enable_sneak_dodge = set::enable_sneak_dodge.GetValue();
     enable_dodge_attack_cancel = set::enable_dodge_attack_cancel.GetValue();
+    only_cancel_light = set::only_cancel_light.GetValue();
     i_frame_duration = set::i_frame_duration.GetValue();
     default_dodge_event = set::default_dodge_event.GetValue();
     sprinting_press_duration = set::sprinting_press_duration.GetValue();
@@ -62,6 +63,7 @@ void ResetDefaults()
     use_perk_lock = false;
     use_percentage_cost = false;
     use_double_tap = false;
+    only_cancel_light = false;
 
     i_frame_duration = 0.3f;
     sprinting_press_duration = 0.5f;
@@ -82,7 +84,7 @@ void ResetDefaults()
     set::step_dodge.SetValue(step_dodge);
     set::enable_sneak_dodge.SetValue(enable_sneak_dodge);
     set::enable_dodge_attack_cancel.SetValue(enable_dodge_attack_cancel);
-
+    set::only_cancel_light.SetValue(only_cancel_light);
     set::i_frame_duration.SetValue(i_frame_duration);
     set::default_dodge_event.SetValue(default_dodge_event);
     set::sprinting_press_duration.SetValue(sprinting_press_duration);
@@ -162,6 +164,42 @@ void Menu::Settings::DrawHotkeyConfigUI()
     }
 }
 
+bool __stdcall Menu::Settings::OnInput(RE::InputEvent* event)
+{
+    bool blockThisUserInput = false;
+
+    if (Menu::Settings::capture_key_input)
+    {
+        for (auto e = event; e; e = e->next)
+        {
+            const auto button = e->AsButtonEvent();
+            if (!button || !button->HasIDCode())
+                continue;
+
+            if (!button->IsDown())
+                continue;
+
+            uint32_t key = button->GetIDCode();
+
+            switch (button->GetDevice()) {
+            case RE::INPUT_DEVICE::kMouse:
+                key += SKSE::InputMap::kMacro_MouseButtonOffset;
+                break;
+            case RE::INPUT_DEVICE::kGamepad:
+                key = SKSE::InputMap::GamepadMaskToKeycode(key);
+                break;
+            default:
+                break;
+            }
+            Menu::Settings::Var::dodge_key = key;
+            blockThisUserInput = true;
+        }
+
+    }
+    return blockThisUserInput;
+}
+
+
 void __stdcall Menu::Settings::RenderSettings()
 {
     using set = Config::Settings;
@@ -196,17 +234,20 @@ void __stdcall Menu::Settings::RenderSettings()
     ImGuiMCP::SameLine();
     SettingCheckbox(Label::use_double_tap.c_str(), Var::use_double_tap, set::use_double_tap, Tool::use_double_tap.c_str());
 
+    SettingCheckbox(Label::only_cancel_light.c_str(), Var::only_cancel_light, set::only_cancel_light,Tool::only_cancel_light.c_str());
+
+
     SettingSlider(Label::i_frame_duration.c_str(), Var::i_frame_duration, 0.0f, 4.0f, "%.2f sec", set::i_frame_duration,
                   Tool::i_frame_duration.c_str());
-    SettingSlider(Label::sprinting_press_duration.c_str(), Var::sprinting_press_duration, 0.0f, 4.0f, "%.2f sec",
+    SettingSlider(Label::sprinting_press_duration.c_str(), Var::sprinting_press_duration, 0.01f, 4.0f, "%.2f sec",
                   set::sprinting_press_duration, Tool::sprinting_press_duration.c_str());
-    SettingSlider(Label::sneaking_press_duration.c_str(), Var::sneaking_press_duration, 0.0f, 4.0f, "%.2f sec",
+    SettingSlider(Label::sneaking_press_duration.c_str(), Var::sneaking_press_duration, 0.01f, 4.0f, "%.2f sec",
                   set::sneaking_press_duration, Tool::sneaking_press_duration.c_str());
     SettingSlider(Label::dodge_cost.c_str(), Var::dodge_cost, 0.0f, 100.0f, "%.2f", set::dodge_cost,
                   Tool::dodge_cost.c_str());
 
     DrawHotkeyConfigUI();
     RenderSystem();
-
+    
     FontAwesome::Pop();
 }

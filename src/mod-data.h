@@ -23,4 +23,7 @@ struct MOD
 
 	inline static constexpr std::string_view USED_AV = "DodgeCostModifier";
 	inline static constexpr std::string_view EXTRA_DODGE_AV = "ExtraDodgeCostModifier";
+
+	inline static constexpr std::string_view DODGE_COST_PERK = "ModDodgeCost";
+	inline static constexpr std::string_view IFRAME_DURATION_PERK = "ModiFrameDuration";
 };

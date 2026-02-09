@@ -21,8 +21,8 @@ namespace Hooks
                 }
                 else if (a_event->HeldDuration() < Config::Settings::sprinting_press_duration.GetValue()) {
                     if (a_event->IsUp()) {
-
-                        Dodge::OnInput();
+                        if (!Utility::IsInMenu())
+                            Dodge::OnInput();
                         bStoppingSprint = false;
                     }
                     return;
@@ -51,7 +51,8 @@ namespace Hooks
                 }
                 else if (a_event->HeldDuration() < Config::Settings::sneaking_press_duration.GetValue()) {
                     if (a_event->IsUp()) {
-                        Dodge::OnInput();
+                        if (!Utility::IsInMenu())
+                            Dodge::OnInput();
                         bStopSneak = false;
                     }
                     return;
@@ -67,9 +68,61 @@ namespace Hooks
         _sneakHandlerHook(a_this, a_event, a_data);
     }
 
+
+    bool AttackBuffer::IsBufferActive()
+    {
+        return GetSingleton()->active();
+    }
+
+    void AttackBuffer::ResetBuffer()
+    {
+        REX::DEBUG("clear "
+                   "is called");
+         return GetSingleton()->clear_if_expired();
+    }
+
+    void AttackBuffer::PushActive()
+    {
+        REX::DEBUG("Push active is called");
+        GetSingleton()->push();
+    }
+
+    void AttackHandler::ProcessButton(RE::AttackBlockHandler* a_this, RE::ButtonEvent* a_event, RE::PlayerControlsData* a_data)
+    {
+        REX::DEBUG("Inside attack handler");
+        if (a_event->IsDown() || AttackBuffer::IsBufferActive())
+        {
+            AttackBuffer::PushActive();
+            return _attackBlockHandlerHook(a_this, a_event, a_data);
+        }
+        AttackBuffer::ResetBuffer();
+
+        _attackBlockHandlerHook(a_this, a_event, a_data);
+    }
+
+    void AttackBuffer::OnUpdate(RE::PlayerCharacter* a_this)
+    {
+        GetSingleton()->clear_if_expired();
+
+        if (!GetSingleton()->active())
+            return;
+
+        // This is your "CanAttack" gate
+        const bool accepted = a_this->NotifyAnimationGraph("attackStart");
+
+        REX::DEBUG("ATTACK ATTEMPT → accepted: {}", accepted);
+
+        GetSingleton()->consume();
+    }
+
     void PlayerUpdateLoop::PlayerUpdate(RE::PlayerCharacter* a_this, float a_delta)
     {
         Dodge::Update(a_this);
+        if (!a_this->IsAttacking())
+            a_this->SetGraphVariableBool("DodgeCancelEnabled", true);
+
+        AttackBuffer::OnUpdate(a_this);
+
         _playerUpdateLoopHook(a_this, a_delta);
     }
 } // namespace Hooks

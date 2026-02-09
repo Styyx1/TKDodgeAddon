@@ -27,7 +27,7 @@ private:
     static void HookSink(uintptr_t ptr)
     {
         FnProcessEvent fn = SafeWrite64Function(ptr + 0x8, &animEventHandler::HookedProcessEvent);
-        fnHash.insert(std::pair<uint64_t, FnProcessEvent>(ptr, fn));
+        fnHash.insert(std::pair(ptr, fn));
     }
 
 public:
@@ -36,12 +36,12 @@ public:
     {
         if (player) {
             REX::DEBUG("Sinking animation event hook for player");
-            const REL::Relocation<uintptr_t> pcPtr{ RE::VTABLE_PlayerCharacter[2] };
+            const REL::Relocation pcPtr{ RE::VTABLE_PlayerCharacter[2] };
             HookSink(pcPtr.address());
         }
         if (NPC) {
             REX::DEBUG("Sinking animation event hook for NPC");
-            const REL::Relocation<uintptr_t> npcPtr{ RE::VTABLE_Character[2] };
+            const REL::Relocation npcPtr{ RE::VTABLE_Character[2] };
             HookSink(npcPtr.address());
         }
         REX::DEBUG("Sinking complete.");

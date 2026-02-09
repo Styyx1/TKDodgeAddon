@@ -10,6 +10,7 @@ namespace Config
         inline static REX::TOML::Bool step_dodge{SECTION_SETTINGS, "bStepDodge", false};
         inline static REX::TOML::Bool enable_sneak_dodge{SECTION_SETTINGS, "bEnableSneakDodge", false};
         inline static REX::TOML::Bool enable_dodge_attack_cancel{SECTION_SETTINGS, "bEnableDodgeAttackCancel", true};
+        inline static REX::TOML::Bool only_cancel_light{SECTION_SETTINGS, "bOnlyCancelLightAttacks", false};
         inline static REX::TOML::F32 i_frame_duration{SECTION_SETTINGS, "fIFrameDuration", 0.3f};
         inline static REX::TOML::Str default_dodge_event{SECTION_SETTINGS, "sDefaultDodgeEvent",
                                                          std::string("TKDodgeBack")};
@@ -34,6 +35,7 @@ namespace Config
         inline static REX::TOML::U32 on_dodge_spell_form_ID{SECTION_FORMS, "uOnDodgeSpellFormID", uint32_t{0x0}};
         inline static REX::TOML::U32 spell_lock_perk_form_ID{SECTION_FORMS, "uSpellLockPerkFormID", uint32_t{0x0}};
 
+
         static inline void UpdateSettings(const bool a_save) noexcept
         {
             const auto toml = REX::TOML::SettingStore::GetSingleton();
@@ -57,6 +59,8 @@ namespace Config
         inline static RE::BGSPerk *ActualDodgePerk;
 
         inline static RE::TESGlobal* TDMGlobal;
+
+
 
         static constexpr std::array slMenuNames{
             RE::BarterMenu::MENU_NAME,    RE::BookMenu::MENU_NAME,     RE::Console::MENU_NAME,
