@@ -101,6 +101,7 @@ namespace Menu
             inline std::string dodge_perk_form_ID = "Dodge Perk Form ID";
             inline std::string on_dodge_spell_form_ID = "OnDodge Spell Form ID";
             inline std::string spell_lock_perk_form_ID = "OnDodge Spell Lock Perk Form ID";
+            inline std::string disable_in_third = "Disable in 3rd person";
         }
         namespace Tool
         {
@@ -131,6 +132,9 @@ namespace Menu
             inline std::string dodge_perk_form_ID = "FormID for dodge perk. Needs to be in this format: 0x800";
             inline std::string on_dodge_spell_form_ID = "FormID for OnDodge Spell, needs to be in this format: 0x800";
             inline std::string spell_lock_perk_form_ID = "FormID for Spell Lock Perk, needs to be in this format: 0x800";
+
+            inline std::string disable_in_third = "Don't allow dodging in 3rd person";
+
         }
         namespace Var
         {
@@ -162,9 +166,11 @@ namespace Menu
             inline uint32_t on_dodge_spell_form_ID;
             inline uint32_t spell_lock_perk_form_ID;
             inline bool use_double_tap;
+            inline bool disable_in_third;
 
         } // namespace Var
         inline void DrawHotkeyConfigUI();
+        inline void DrawBools();
         bool __stdcall OnInput(RE::InputEvent* event);
         void __stdcall RenderSettings();
 

@@ -40,6 +40,7 @@ void RestoreFromSettings()
     use_percentage_cost = set::use_percentage_cost.GetValue();
 
     use_double_tap = set::use_double_tap.GetValue();
+    disable_in_third = set::disable_in_third.GetValue();
 }
 void ResetDefaults()
 {
@@ -63,14 +64,10 @@ void ResetDefaults()
     sneaking_press_duration = 0.5f;
     dodge_cost = 15.0f;
 
-    dodge_perk_form_ID = 0;
-    on_dodge_spell_form_ID = 0;
-    spell_lock_perk_form_ID = 0;
+    disable_in_third = false;
 
     default_dodge_event = "TKDodgeForward";
     dodge_key = 274;
-    perk_mod_name = "";
-    spell_mod_name = "";
 
     set::enable_sneak_key_dodge.SetValue(enable_sneak_key_dodge);
     set::enable_dodge_in_place.SetValue(enable_dodge_in_place);
@@ -92,6 +89,8 @@ void ResetDefaults()
     set::use_percentage_cost.SetValue(use_percentage_cost);
 
     set::use_double_tap.SetValue(use_double_tap);
+
+    set::disable_in_third.SetValue(disable_in_third);
 
     // Save Settings
     set::UpdateSettings(true);
@@ -151,6 +150,43 @@ void Menu::Settings::DrawHotkeyConfigUI()
     }
 }
 
+void Menu::Settings::DrawBools()
+{
+    using set = Config::Settings;
+    ImGuiMCP::NewLine();
+
+    SettingCheckbox(Label::enable_sneak_key_dodge.c_str(), Var::enable_sneak_key_dodge, set::enable_sneak_key_dodge,
+                    Tool::enable_sneak_key_dodge.c_str());
+    ImGuiMCP::SameLine();
+    SettingCheckbox(Label::enable_dodge_in_place.c_str(), Var::enable_dodge_in_place, set::enable_dodge_in_place,
+                    Tool::enable_dodge_in_place.c_str());
+
+    SettingCheckbox(Label::step_dodge.c_str(), Var::step_dodge, set::step_dodge, Tool::step_dodge.c_str());
+    ImGuiMCP::SameLine();
+    SettingCheckbox(Label::enable_sneak_dodge.c_str(), Var::enable_sneak_dodge, set::enable_sneak_dodge,
+                    Tool::enable_sneak_dodge.c_str());
+
+    SettingCheckbox(Label::enable_dodge_attack_cancel.c_str(), Var::enable_dodge_attack_cancel,
+                    set::enable_dodge_attack_cancel, Tool::enable_dodge_attack_cancel.c_str());
+    ImGuiMCP::SameLine();
+    SettingCheckbox(Label::use_sprint_key.c_str(), Var::use_sprint_key, set::use_sprint_key,
+                    Tool::use_sprint_key.c_str());
+
+    SettingCheckbox(Label::use_mco_recover_window.c_str(), Var::use_mco_recover_window, set::use_mco_recover_window,
+                    Tool::use_mco_recover_window.c_str());
+    ImGuiMCP::SameLine();
+    SettingCheckbox(Label::use_perk_lock.c_str(), Var::use_perk_lock, set::use_perk_lock, Tool::use_perk_lock.c_str());
+
+    SettingCheckbox(Label::use_percentage_cost.c_str(), Var::use_percentage_cost, set::use_percentage_cost,
+                    Tool::use_percentage_cost.c_str());
+    ImGuiMCP::SameLine();
+    SettingCheckbox(Label::use_double_tap.c_str(), Var::use_double_tap, set::use_double_tap, Tool::use_double_tap.c_str());
+
+    SettingCheckbox(Label::only_cancel_light.c_str(), Var::only_cancel_light, set::only_cancel_light,Tool::only_cancel_light.c_str());
+    ImGuiMCP::SameLine();
+    SettingCheckbox(Label::disable_in_third.c_str(), Var::disable_in_third, set::disable_in_third, Tool::disable_in_third.c_str());
+}
+
 bool __stdcall Menu::Settings::OnInput(RE::InputEvent* event)
 {
     bool blockThisUserInput = false;
@@ -192,36 +228,8 @@ void __stdcall Menu::Settings::RenderSettings()
     using set = Config::Settings;
     FontAwesome::PushSolid();
     ImGuiMCP::Text(Menu::Titles::MOD_TITLE.c_str());
-    ImGuiMCP::NewLine();
 
-    SettingCheckbox(Label::enable_sneak_key_dodge.c_str(), Var::enable_sneak_key_dodge, set::enable_sneak_key_dodge,
-                    Tool::enable_sneak_key_dodge.c_str());
-    ImGuiMCP::SameLine();
-    SettingCheckbox(Label::enable_dodge_in_place.c_str(), Var::enable_dodge_in_place, set::enable_dodge_in_place,
-                    Tool::enable_dodge_in_place.c_str());
-
-    SettingCheckbox(Label::step_dodge.c_str(), Var::step_dodge, set::step_dodge, Tool::step_dodge.c_str());
-    ImGuiMCP::SameLine();
-    SettingCheckbox(Label::enable_sneak_dodge.c_str(), Var::enable_sneak_dodge, set::enable_sneak_dodge,
-                    Tool::enable_sneak_dodge.c_str());
-
-    SettingCheckbox(Label::enable_dodge_attack_cancel.c_str(), Var::enable_dodge_attack_cancel,
-                    set::enable_dodge_attack_cancel, Tool::enable_dodge_attack_cancel.c_str());
-    ImGuiMCP::SameLine();
-    SettingCheckbox(Label::use_sprint_key.c_str(), Var::use_sprint_key, set::use_sprint_key,
-                    Tool::use_sprint_key.c_str());
-
-    SettingCheckbox(Label::use_mco_recover_window.c_str(), Var::use_mco_recover_window, set::use_mco_recover_window,
-                    Tool::use_mco_recover_window.c_str());
-    ImGuiMCP::SameLine();
-    SettingCheckbox(Label::use_perk_lock.c_str(), Var::use_perk_lock, set::use_perk_lock, Tool::use_perk_lock.c_str());
-
-    SettingCheckbox(Label::use_percentage_cost.c_str(), Var::use_percentage_cost, set::use_percentage_cost,
-                    Tool::use_percentage_cost.c_str());
-    ImGuiMCP::SameLine();
-    SettingCheckbox(Label::use_double_tap.c_str(), Var::use_double_tap, set::use_double_tap, Tool::use_double_tap.c_str());
-
-    SettingCheckbox(Label::only_cancel_light.c_str(), Var::only_cancel_light, set::only_cancel_light,Tool::only_cancel_light.c_str());
+    DrawBools();
 
 
     SettingSlider(Label::i_frame_duration.c_str(), Var::i_frame_duration, 0.0f, 4.0f, "%.2f sec", set::i_frame_duration,

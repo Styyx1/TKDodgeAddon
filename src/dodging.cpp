@@ -151,9 +151,7 @@ namespace Dodge
         if (a_actor->IsPlayerRef() && RE::PlayerCharacter::IsGodMode())
             return;
 
-        float dodgeCost = CalculateDodgeCost(a_actor);
-        REX::DEBUG("Dodge Cost first is {}", dodgeCost);
-
+        const float dodgeCost = CalculateDodgeCost(a_actor);
         a_actor->DamageActorValue(RE::ActorValue::kStamina, -dodgeCost);
     }
 
@@ -365,6 +363,21 @@ namespace Dodge
         return DodgeResult::kIsJumping;
     }
 
+    DodgeResult IsThirdPersonAllowed(const RE::Actor* a_actor)
+    {
+        if (Config::Settings::disable_in_third.GetValue())
+        {
+            if (a_actor->IsPlayerRef())
+            {
+                if (const auto playerCam = RE::PlayerCamera::GetSingleton(); playerCam && playerCam->IsInThirdPerson())
+                {
+                    return DodgeResult::kInThirdPerson;
+                }
+            }
+        }
+        return DodgeResult::kSuccess;
+    }
+
     DodgeResult GetDodgeResult( RE::Actor* a_actor)
     {
         if (!a_actor)
@@ -407,6 +420,9 @@ namespace Dodge
             return res;
 
         if (const auto res = PerkCheck(a_actor); res != DodgeResult::kSuccess)
+            return res;
+
+        if (const auto res = IsThirdPersonAllowed(a_actor); res != DodgeResult::kSuccess)
             return res;
 
         return DodgeResult::kSuccess;

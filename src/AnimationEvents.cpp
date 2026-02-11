@@ -34,34 +34,29 @@ RE::BSEventNotifyControl animEventHandler::HookedProcessEvent(RE::BSAnimationGra
     REX::DEBUG(" Event {} recieved", a_event.tag.data());
     REX::DEBUG(" Payload {} recieved", a_event.payload.c_str());
 
+    auto* actor = const_cast<RE::Actor*>(a_event.holder->As<RE::Actor>());
+
+    if (!actor)
+    {
+        return fn ? (this->*fn)(a_event, src) : RE::BSEventNotifyControl::kContinue;
+    }
+
     if (a_event.tag == "TKDR_DodgeStart") {
-        Dodge::ApplyDodgeCostActor(const_cast<RE::Actor*>(a_event.holder->As<RE::Actor>()));
+        Dodge::ApplyDodgeCostActor(actor);
     }
 
     if (a_event.tag == "MCO_AttackInitiate" ||a_event.tag == "MCO_PowerAttackInitiate" || a_event.tag == "MCO_attackEnterNotify")
     {
-        if (const auto actor = const_cast<RE::Actor*>(a_event.holder->As<RE::Actor>()))
-        {
-            actor->SetGraphVariableBool("DodgeCancelEnabled", false);
-            REX::DEBUG("Set DODGE CANCEL ENABLED to false");
-        }
+        actor->SetGraphVariableBool("DodgeCancelEnabled", false);
     }
 
     if (a_event.tag == "MCO_WinOpen" || a_event.tag == "MCO_PowerWinOpen")
     {
-        if (const auto actor = const_cast<RE::Actor*>(a_event.holder->As<RE::Actor>()))
-        {
-            actor->SetGraphVariableBool("DodgeCancelEnabled", true);
-            REX::DEBUG("Set DODGE CANCEL ENABLED to true");
-        }
+        actor->SetGraphVariableBool("DodgeCancelEnabled", true);
     }
     if (a_event.tag == "MCO_PowerWinClose" || a_event.tag == "MCO_WinClose")
     {
-        if (const auto actor = const_cast<RE::Actor*>(a_event.holder->As<RE::Actor>()))
-        {
-            actor->SetGraphVariableBool("DodgeCancelEnabled", false);
-            REX::DEBUG("Set DODGE CANCEL ENABLED to false");
-        }
+        actor->SetGraphVariableBool("DodgeCancelEnabled", false);
     }
 
 

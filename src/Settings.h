@@ -30,6 +30,8 @@ namespace Config
         inline static REX::TOML::Str on_dodge_spell_ID{SECTION_FORMS, "sOnDodgeSpellID", std::string("OnDodgeDummySpell")};
         inline static REX::TOML::Str on_dodge_spell_perk_ID{SECTION_FORMS, "sOnDodgeSpellRequiredPerkID", std::string("TKDodgeAddon.esp|0x80F")};
 
+        inline static REX::TOML::Bool disable_in_third{SECTION_SETTINGS, "bDisableInThird", false};
+
 
 
         static inline void UpdateSettings(const bool a_save) noexcept

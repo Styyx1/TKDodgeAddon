@@ -19,6 +19,7 @@ namespace Dodge
         kIsInWrongState,
         kStamina,
         kOverencumbered,
+        kInThirdPerson,
         kUnknown = 99,
     };
 
@@ -70,6 +71,9 @@ namespace Dodge
 
         case DodgeResult::kOverencumbered:
             return "Actor is overencumbered";
+
+        case DodgeResult::kInThirdPerson:
+            return "Actor is in third person";
 
         default:
             return "Unknown dodge result";
@@ -172,6 +176,7 @@ namespace Dodge
     DodgeResult HasStamina( RE::Actor* a_actor); // success if actor has enough stamina or actor is player in god mode
     DodgeResult IsOverencumbered(const RE::Actor* a_actor); // success if not overencumbered
     DodgeResult IsJumping(const RE::Actor* a_actor); //kSuccess if actor is not jumping
+    DodgeResult IsThirdPersonAllowed(const RE::Actor* a_actor);
     DodgeResult GetDodgeResult( RE::Actor* a_actor);
     bool IsInGodModeHelper(const RE::Actor* a_actor);
     bool CanAttackCancel(const RE::Actor* a_actor);
