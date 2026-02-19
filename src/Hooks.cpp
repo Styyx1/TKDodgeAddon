@@ -1,8 +1,8 @@
 #include "Hooks.h"
-#include "InputEvents.h"
 #include "Settings.h"
 #include "Utility.h"
 #include "dodging.h"
+
 
 namespace Hooks
 {
@@ -117,12 +117,38 @@ namespace Hooks
 
     void PlayerUpdateLoop::PlayerUpdate(RE::PlayerCharacter* a_this, float a_delta)
     {
-        Dodge::Update(a_this);
+
         if (!a_this->IsAttacking())
             a_this->SetGraphVariableBool("DodgeCancelEnabled", true);
 
         AttackBuffer::OnUpdate(a_this);
 
         _playerUpdateLoopHook(a_this, a_delta);
+    }
+
+
+    static bool wasInMenu = false;
+    void MainUpdateLoop::MainUpdate(float a_delta)
+    {
+        const bool inMenu = Utility::IsInMenu();
+
+        const auto playerCharacter = RE::PlayerCharacter::GetSingleton();
+
+        if (wasInMenu && !inMenu)
+        {
+            Dodge::g_menuBlocker.block();
+            Dodge::ClearBuffer();
+        }
+
+        if (Dodge::g_menuBlocker.active())
+        {
+            Dodge::ClearBuffer();
+        }
+        else
+            Dodge::Update(playerCharacter);
+
+        wasInMenu = inMenu;
+
+        _mainUpdateLoopHook(a_delta);
     }
 } // namespace Hooks

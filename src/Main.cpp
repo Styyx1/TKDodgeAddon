@@ -3,6 +3,7 @@
 #include "ui.h"
 #include "AnimationEvents.h"
 
+bool showed = false;
 void Listener(SKSE::MessagingInterface::Message *a_msg)
 {
     switch (a_msg->type)
@@ -13,6 +14,16 @@ void Listener(SKSE::MessagingInterface::Message *a_msg)
     case SKSE::MessagingInterface::kDataLoaded:
         animEventHandler::RegisterForPlayer();
         Config::Forms::LoadForms();
+        break;
+    case SKSE::MessagingInterface::kPostLoadGame:
+        if (!showed)
+        {
+            if (MiscUtil::ShowWarningForCrashGuard("TK Dodge Addon"))
+            {
+                REX::INFO("Crash Guard is loaded, show unsupported warning");
+            };
+            showed = true;
+        }
         break;
 
     default:

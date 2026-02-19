@@ -79,4 +79,12 @@ namespace Hooks
         inline static REL::HookVFT _playerUpdateLoopHook{ RE::VTABLE_PlayerCharacter[0], 0xAD, PlayerUpdate };
     };
 
+    struct MainUpdateLoop
+    {
+        static void MainUpdate(float a_delta);
+        inline static REL::Hook _mainUpdateLoopHook{ REL::ID(36564), 0xc26, MainUpdate };
+    };
+
+
+
 } // namespace Hooks

@@ -1,4 +1,5 @@
 #pragma once
+#include "Settings.h"
 
 namespace Dodge
 {
@@ -152,13 +153,35 @@ namespace Dodge
         {
             queued = false;
             fired = false;
+            queuedAt = TimePoint{};
         }
     };
 
+    struct MenuBlocker
+    {
+        using Clock = std::chrono::steady_clock;
+        using TimePoint = Clock::time_point;
+
+        TimePoint blockUntil{};
+
+        void block()
+        {
+            //tie the dodge blocking when a menu closes to the sprint delay instead of hard-coding a value.
+            auto time = static_cast<int>(Config::Settings::sprinting_press_duration.GetValue() * 1000);
+            blockUntil = Clock::now() + std::chrono::milliseconds(time);
+        }
+
+        [[nodiscard]] bool active() const
+        {
+            return Clock::now() < blockUntil;
+        }
+    };
+    static MenuBlocker g_menuBlocker;
     void OnInput();          // Called by the 3 input methods
     void Update(RE::Actor* a_actor);           // Called in the player update loop
     bool CanDodge( RE::Actor* a_actor);         // main decider if dodge is allowed
     bool DoDodge(RE::Actor* a_actor);          // do dodge
+    void ClearBuffer();
     DodgeResult PerkCheck(const RE::Actor *a_actor);  // check if perk exists and the actor has the perk
     DodgeResult IsDodging(const RE::Actor* a_actor);  // check if actor is already dodging
     DodgeResult IsInAttackState(const RE::Actor* a_actor); // check the attack state of the actor (should be a simple build in function but i want to return the result

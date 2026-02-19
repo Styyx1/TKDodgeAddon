@@ -11,6 +11,11 @@ namespace Dodge
 
     void OnInput()
     {
+        if (Utility::IsInMenu())
+            return;
+        if (g_menuBlocker.active())
+            return;
+
         if (Config::Settings::use_double_tap.GetValue())
         {
             if (dodgeDoublePress.on_key_pressed())
@@ -446,5 +451,11 @@ namespace Dodge
 
         a_actor->SetGraphVariableFloat("TKDR_IframeDuration", iFrames); // Set invulnerable frame duration
         return a_actor->NotifyAnimationGraph(dodge_event);
+    }
+
+    void ClearBuffer()
+    {
+        buffer.clear();
+        dodgeDoublePress.reset_last_press();
     }
 }
