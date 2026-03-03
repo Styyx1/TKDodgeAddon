@@ -68,6 +68,7 @@ namespace Menu
     namespace Settings
     {
         inline bool capture_key_input = false;
+        inline bool abort_key_input = false;
         namespace Titles
         {
 

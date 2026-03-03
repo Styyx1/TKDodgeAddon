@@ -98,16 +98,16 @@ void ResetDefaults()
 }
 void RenderSystem()
 {
-    ImGuiMCP::NewLine();
-    ImGuiMCP::SeparatorText(Label::system.c_str());
+    NewLine();
+    SeparatorText(Label::system.c_str());
 
-    if (ImGuiMCP::Button(Label::save_settings.c_str()))
+    if (Button(Label::save_settings.c_str()))
     {
         Config::Settings::UpdateSettings(true);
     }
 
-    ImGuiMCP::SameLine();
-    if (ImGuiMCP::Button(Label::restore_defaults.c_str()))
+    SameLine();
+    if (Button(Label::restore_defaults.c_str()))
     {
         ResetDefaults();
     }
@@ -116,38 +116,53 @@ void RenderSystem()
 
 void Menu::Settings::DrawHotkeyConfigUI()
 {
-    std::string key_name = hotkeys::details::GetNameByKey(Config::Settings::dodge_key.GetValue()).data();
-
-    // not really needed but looks better in the menu
-    std::transform(key_name.begin(), key_name.end(), key_name.begin(), ::toupper);
-
-    ImGuiMCP::Text(std::format("Hotkey: {}", key_name).c_str());
-    ImGuiMCP::SameLine();
-
-    if (!Menu::Settings::capture_key_input)
+    if (Var::dodge_key <= 1)
     {
-        if (ImGuiMCP::Button("Rebind"))
-        {
-            Menu::Settings::capture_key_input = true;
-            Menu::Settings::Var::dodge_key = 0;
-        }
-        ImGuiMCP::SameLine();
-        ux::HelpMarker("Press the desired key to rebind the visibility toggle.");
+        Text("UNBOUND");
     }
     else
     {
-        ImGuiMCP::Text("Press any key");
-        ImGuiMCP::SameLine();
-        if (ImGuiMCP::Button("Cancel"))
+        std::string key_name = hotkeys::details::GetNameByKey(Config::Settings::dodge_key.GetValue()).data();
+        // not really needed but looks better in the menu
+        std::transform(key_name.begin(), key_name.end(), key_name.begin(), ::toupper);
+
+        ImGuiMCP::Text(std::format("Hotkey: {}", key_name).c_str());
+    }
+
+    SameLine();
+
+    if (!capture_key_input)
+    {
+        if (Button("Rebind"))
         {
-            Menu::Settings::capture_key_input = false;
-            Settings::Var::dodge_key = Config::Settings::dodge_key.GetValue();
+
+            capture_key_input = true;
+            Var::dodge_key = 0;
+        }
+        SameLine();
+        ux::HelpMarker("Press the desired key to rebind the visibility toggle");
+    }
+    else
+    {
+        Text("Press any key");
+        SameLine();
+
+        if (Button("Cancel"))
+        {
+            capture_key_input = false;
+            Var::dodge_key = Config::Settings::dodge_key.GetValue();
+        }
+        SameLine();
+        if (Button("Unbind"))
+        {
+            capture_key_input = false;
+            Var::dodge_key = 1;
         }
     }
-    if (Menu::Settings::Var::dodge_key != 0)
+    if (Var::dodge_key != 0)
     {
-        Config::Settings::dodge_key.SetValue(Menu::Settings::Var::dodge_key);
-        Menu::Settings::capture_key_input = false;
+        Config::Settings::dodge_key.SetValue(Var::dodge_key);
+        capture_key_input = false;
     }
 }
 
@@ -155,7 +170,7 @@ bool __stdcall Menu::Settings::OnInput(RE::InputEvent* event)
 {
     bool blockThisUserInput = false;
 
-    if (Menu::Settings::capture_key_input)
+    if (capture_key_input)
     {
         for (auto e = event; e; e = e->next)
         {
@@ -178,10 +193,17 @@ bool __stdcall Menu::Settings::OnInput(RE::InputEvent* event)
             default:
                 break;
             }
-            Menu::Settings::Var::dodge_key = key;
-            blockThisUserInput = true;
+            // if left mouse button, set the key to 1 to safely unbind it.
+            // Setting it to 0 causes crashes later on for some reason
+            // this means left mouse button is not a possible dodge key but that's a fair trade off in order to have an unbind button
+            if (key == 256)
+            {
+                Var::dodge_key = 1;
+                Config::Settings::dodge_key.SetValue(1);
+                return blockThisUserInput;
+            }
+            Var::dodge_key = key;
         }
-
     }
     return blockThisUserInput;
 }
@@ -191,34 +213,34 @@ void __stdcall Menu::Settings::RenderSettings()
 {
     using set = Config::Settings;
     FontAwesome::PushSolid();
-    ImGuiMCP::Text(Menu::Titles::MOD_TITLE.c_str());
-    ImGuiMCP::NewLine();
+    Text(Menu::Titles::MOD_TITLE.c_str());
+    NewLine();
 
     SettingCheckbox(Label::enable_sneak_key_dodge.c_str(), Var::enable_sneak_key_dodge, set::enable_sneak_key_dodge,
                     Tool::enable_sneak_key_dodge.c_str());
-    ImGuiMCP::SameLine();
+    SameLine();
     SettingCheckbox(Label::enable_dodge_in_place.c_str(), Var::enable_dodge_in_place, set::enable_dodge_in_place,
                     Tool::enable_dodge_in_place.c_str());
 
     SettingCheckbox(Label::step_dodge.c_str(), Var::step_dodge, set::step_dodge, Tool::step_dodge.c_str());
-    ImGuiMCP::SameLine();
+    SameLine();
     SettingCheckbox(Label::enable_sneak_dodge.c_str(), Var::enable_sneak_dodge, set::enable_sneak_dodge,
                     Tool::enable_sneak_dodge.c_str());
 
     SettingCheckbox(Label::enable_dodge_attack_cancel.c_str(), Var::enable_dodge_attack_cancel,
                     set::enable_dodge_attack_cancel, Tool::enable_dodge_attack_cancel.c_str());
-    ImGuiMCP::SameLine();
+    SameLine();
     SettingCheckbox(Label::use_sprint_key.c_str(), Var::use_sprint_key, set::use_sprint_key,
                     Tool::use_sprint_key.c_str());
 
     SettingCheckbox(Label::use_mco_recover_window.c_str(), Var::use_mco_recover_window, set::use_mco_recover_window,
                     Tool::use_mco_recover_window.c_str());
-    ImGuiMCP::SameLine();
+    SameLine();
     SettingCheckbox(Label::use_perk_lock.c_str(), Var::use_perk_lock, set::use_perk_lock, Tool::use_perk_lock.c_str());
 
     SettingCheckbox(Label::use_percentage_cost.c_str(), Var::use_percentage_cost, set::use_percentage_cost,
                     Tool::use_percentage_cost.c_str());
-    ImGuiMCP::SameLine();
+    SameLine();
     SettingCheckbox(Label::use_double_tap.c_str(), Var::use_double_tap, set::use_double_tap, Tool::use_double_tap.c_str());
 
     SettingCheckbox(Label::only_cancel_light.c_str(), Var::only_cancel_light, set::only_cancel_light,Tool::only_cancel_light.c_str());

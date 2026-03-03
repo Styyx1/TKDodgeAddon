@@ -30,9 +30,7 @@ namespace Config
         inline static REX::TOML::Str on_dodge_spell_ID{SECTION_FORMS, "sOnDodgeSpellID", std::string("OnDodgeDummySpell")};
         inline static REX::TOML::Str on_dodge_spell_perk_ID{SECTION_FORMS, "sOnDodgeSpellRequiredPerkID", std::string("TKDodgeAddon.esp|0x80F")};
 
-
-
-        static inline void UpdateSettings(const bool a_save) noexcept
+        static void UpdateSettings(const bool a_save) noexcept
         {
             const auto toml = REX::TOML::SettingStore::GetSingleton();
             toml->Init(TOML_PATH_DEFAULT.data(), TOML_PATH_CUSTOM.data());

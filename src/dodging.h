@@ -181,7 +181,7 @@ namespace Dodge
     void Update(RE::Actor* a_actor);           // Called in the player update loop
     bool CanDodge( RE::Actor* a_actor);         // main decider if dodge is allowed
     bool DoDodge(RE::Actor* a_actor);          // do dodge
-    void ClearBuffer();
+    void ClearBuffer();                         // clear input buffer. used if a menu is open
     DodgeResult PerkCheck(const RE::Actor *a_actor);  // check if perk exists and the actor has the perk
     DodgeResult IsDodging(const RE::Actor* a_actor);  // check if actor is already dodging
     DodgeResult IsInAttackState(const RE::Actor* a_actor); // check the attack state of the actor (should be a simple build in function but i want to return the result
@@ -195,7 +195,7 @@ namespace Dodge
     DodgeResult HasStamina( RE::Actor* a_actor); // success if actor has enough stamina or actor is player in god mode
     DodgeResult IsOverencumbered(const RE::Actor* a_actor); // success if not overencumbered
     DodgeResult IsJumping(const RE::Actor* a_actor); //kSuccess if actor is not jumping
-    DodgeResult GetDodgeResult( RE::Actor* a_actor);
+    DodgeResult GetDodgeResult( RE::Actor* a_actor); // get total dodge result
     bool IsInGodModeHelper(const RE::Actor* a_actor);
     bool CanAttackCancel(const RE::Actor* a_actor);
     bool IsInMCORecovery(const RE::Actor* a_actor);

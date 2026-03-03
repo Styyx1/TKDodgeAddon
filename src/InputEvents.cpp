@@ -43,7 +43,7 @@ namespace Events
                 break;
             }
 
-            if (id != Config::Settings::dodge_key.GetValue())
+            if (id != Config::Settings::dodge_key.GetValue() || id == 1)
                 continue;
 
             if (!Utility::IsInMenu())

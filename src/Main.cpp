@@ -15,17 +15,6 @@ void Listener(SKSE::MessagingInterface::Message *a_msg)
         animEventHandler::RegisterForPlayer();
         Config::Forms::LoadForms();
         break;
-    case SKSE::MessagingInterface::kPostLoadGame:
-        if (!showed)
-        {
-            if (MiscUtil::ShowWarningForCrashGuard("TK Dodge Addon"))
-            {
-                REX::INFO("Crash Guard is loaded, show unsupported warning");
-            };
-            showed = true;
-        }
-        break;
-
     default:
         break;
     }
