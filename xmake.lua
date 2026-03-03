@@ -7,7 +7,7 @@ includes("extern/styyx-utils")
 
 -- set project
 set_project("TK_Dodge_RE")
-set_version("3.0.0")
+set_version("3.1.5")
 set_license("GPL-3.0")
 
 -- set defaults

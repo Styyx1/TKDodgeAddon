@@ -4,7 +4,7 @@
     },
     ["windows|x64"] = {
         ["cmake#f56260b5"] = {
-            version = "3.31.6-msvc6"
+            version = "4.2.3"
         },
         ["glaze#f56260b5"] = {
             version = "v6.1.0"
