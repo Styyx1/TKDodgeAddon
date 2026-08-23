@@ -4,9 +4,9 @@
 
 namespace Config
 {
-struct Settings : public REX::Singleton<Settings>, MOD
+struct Settings : public REX::TSingleton<Settings>, MOD
 {
-    inline static REX::TOML::Bool enable_sneak_key_dodge{SECTION_SETTINGS, "bEndableSneakKeyDodge", false};
+    inline static REX::TOML::Bool enable_sneak_key_dodge{SECTION_SETTINGS, "bEnableSneakKeyDodge", false};
     inline static REX::TOML::Bool enable_dodge_in_place{SECTION_SETTINGS, "bEnableDodgeInPlace", false};
     inline static REX::TOML::Bool step_dodge{SECTION_SETTINGS, "bStepDodge", false};
     inline static REX::TOML::Bool enable_sneak_dodge{SECTION_SETTINGS, "bEnableSneakDodge", false};
@@ -29,7 +29,7 @@ struct Settings : public REX::Singleton<Settings>, MOD
 
     inline static REX::TOML::Bool use_perk_lock{SECTION_SETTINGS, "bUsePerkLock", false};
     inline static REX::TOML::Bool use_percentage_cost{SECTION_SETTINGS, "bUsePercentageCost", false};
-    inline static REX::TOML::Bool remove_forward{SECTION_SETTINGS, "bRemoveForwardDodge", true};
+    inline static REX::TOML::Bool remove_forward{SECTION_SETTINGS, "bRemoveForwardDodge", false};
 
     inline static REX::TOML::Str dodge_perk_ID{SECTION_FORMS, "sDodgeRequiredPerkID",
                                                std::string("TKDodgeAddon.esp|0x809")};

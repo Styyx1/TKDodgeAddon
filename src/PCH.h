@@ -1,11 +1,14 @@
 #pragma once
 
+#define NOMINMAX
 #include <RE/Skyrim.h>
-#include <REL/Relocation.h>
+
 #include <SKSE/SKSE.h>
+
+#include <CLIBUtil/utils.hpp>
+#include <REL/Relocation.h>
 #include <REX/REX/TOML.h>
 #include <styyx-utils.h>
-#include <CLIBUtil/utils.hpp>
 
 #undef ERROR
 

@@ -1,9 +1,7 @@
 #include "dodging.h"
 
 #include "API/PerkEntryPointExtenderAPI.h"
-#include "RE/H/HUDObject.h"
-#include "RE/P/PlayerCamera.h"
-#include "RE/P/PlayerCharacter.h"
+
 #include "Settings.h"
 #include "Utility.h"
 #include "mod-data.h"
@@ -60,10 +58,46 @@ bool CanDodge(RE::Actor* a_actor)
     {
         return true;
     }
-    REX::DEBUG("Dodge failed because of: {}", DodgeResultToString(result));
 
     return false;
 }
+bool DoDodge(RE::Actor* a_actor)
+{
+
+    if (!CanDodge(a_actor))
+    {
+        return false;
+    }
+
+    std::string dodge_event = Config::Settings::default_dodge_event.GetValue();
+    const auto result       = GetDodgeEvent(dodge_event);
+
+    if (result == DodgeEventResult::kForwardBlocked)
+        return false;
+
+    if (result == DodgeEventResult::kNoDirection && !Config::Settings::enable_dodge_in_place.GetValue())
+        return false;
+
+    if (Config::Settings::step_dodge.GetValue())
+    {
+        a_actor->SetGraphVariableInt("iStep", 2);
+    }
+    else
+        a_actor->SetGraphVariableInt("iStep", 0);
+
+    CastOnDodgeSpell(a_actor);
+    float iFrames = Config::Settings::i_frame_duration.GetValue();
+
+    RE::TESForm* armo = a_actor->GetWornArmor(RE::BGSBipedObjectForm::BipedObjectSlot::kBody, true);
+    RE::HandleEntryPoint(RE::PerkEntryPoint::kModPowerAttackStamina, a_actor, iFrames, MOD::IFRAME_DURATION_PERK, armo);
+
+    iFrames = std::clamp(iFrames, 0.0f, 3.0f);
+
+    a_actor->SetGraphVariableFloat("TKDR_IframeDuration",
+                                   iFrames); // Set invulnerable frame duration
+
+    return a_actor->NotifyAnimationGraph(dodge_event);
+};
 
 DodgeResult PerkCheck(const RE::Actor* a_actor)
 {
@@ -73,7 +107,7 @@ DodgeResult PerkCheck(const RE::Actor* a_actor)
         return DodgeResult::kSuccess;
     }
 
-    if (IsInGodModeHelper(a_actor))
+    if (ActorUtil::IsGod(a_actor))
     {
         return DodgeResult::kSuccess;
     }
@@ -124,19 +158,20 @@ float CalculateDodgeCost(RE::Actor* a_actor)
     float dodgeCostModifier = 1.0;
     float extraDodgeCostMod = 1.0;
 
-    const auto cost_modifierAV  = AVUtil::LookupActorValueByName(MOD::USED_AV.data());
-    const auto stag_cost_mod_AV = AVUtil::LookupActorValueByName(MOD::EXTRA_DODGE_AV.data());
+    const auto cost_modifierAV  = RE::ActorValueList::LookupActorValueByName(MOD::USED_AV.data());
+    const auto stag_cost_mod_AV = RE::ActorValueList::LookupActorValueByName(MOD::EXTRA_DODGE_AV.data());
 
-    if (cost_modifierAV != RE::ActorValue::kNone)
+    if (cost_modifierAV != RE::ActorValue::kNone && cost_modifierAV != RE::ActorValue::kTotal)
     {
         dodgeCostModifier = a_actor->GetActorValue(cost_modifierAV);
     }
-    if (stag_cost_mod_AV != RE::ActorValue::kNone)
+    if (stag_cost_mod_AV != RE::ActorValue::kNone && cost_modifierAV != RE::ActorValue::kTotal)
     {
         extraDodgeCostMod = a_actor->GetActorValue(stag_cost_mod_AV);
     }
     float dodge_cost = Config::Settings::dodge_cost.GetValue();
     float cost       = dodge_cost;
+
     if (Config::Settings::use_percentage_cost.GetValue())
     {
         const auto max_stam = a_actor->GetBaseActorValue(RE::ActorValue::kStamina);
@@ -149,7 +184,6 @@ float CalculateDodgeCost(RE::Actor* a_actor)
     RE::TESForm* armo = a_actor->GetWornArmor(RE::BGSBipedObjectForm::BipedObjectSlot::kBody, true);
 
     RE::HandleEntryPoint(RE::PerkEntryPoint::kModPowerAttackStamina, a_actor, cost, MOD::DODGE_COST_PERK, armo);
-    REX::DEBUG("Dodge Cost after is {}", cost);
 
     return cost;
 }
@@ -160,8 +194,6 @@ void ApplyDodgeCostActor(RE::Actor* a_actor)
         return;
 
     float dodgeCost = CalculateDodgeCost(a_actor);
-    REX::DEBUG("Dodge Cost first is {}", dodgeCost);
-
     a_actor->DamageActorValue(RE::ActorValue::kStamina, -dodgeCost);
 }
 
@@ -176,7 +208,6 @@ DodgeEventResult GetDodgeEvent(std::string& a_event)
     if (Config::Forms::TDMGlobal && Config::Forms::TDMGlobal->Is(RE::FormType::Global) &&
         Config::Forms::TDMGlobal->value != 0)
     {
-        REX::DEBUG("TDM Free Movement, Force to Forward Dodge!");
         a_event = "TKDodgeForward";
     }
     else
@@ -200,10 +231,6 @@ DodgeEventResult GetDodgeEvent(std::string& a_event)
         else if (dodgeAngle >= 2 * PI8 && dodgeAngle < 6 * PI8)
         {
             a_event = "TKDodgeRight";
-        }
-        else
-        {
-            a_event = Config::Settings::default_dodge_event.GetValue();
         }
     }
     return DodgeEventResult::kSuccess;
@@ -357,6 +384,7 @@ DodgeResult HasStamina(RE::Actor* a_actor)
     {
         return DodgeResult::kSuccess;
     }
+
     if (a_actor->GetActorValue(RE::ActorValue::kStamina) >= CalculateDodgeCost(a_actor))
     {
         return DodgeResult::kSuccess;
@@ -436,45 +464,6 @@ DodgeResult GetDodgeResult(RE::Actor* a_actor)
     return DodgeResult::kSuccess;
 }
 
-bool DoDodge(RE::Actor* a_actor)
-{
-    if (!CanDodge(a_actor))
-    {
-        REX::DEBUG("cannot dodge");
-        return false;
-    }
-
-    std::string dodge_event = Config::Settings::default_dodge_event.GetValue();
-    const auto result       = GetDodgeEvent(dodge_event);
-
-    if (result == DodgeEventResult::kForwardBlocked)
-        return false;
-
-    if (result == DodgeEventResult::kNoDirection && !Config::Settings::enable_dodge_in_place.GetValue())
-        return false;
-
-    if (Config::Settings::step_dodge.GetValue())
-    {
-        REX::DEBUG("step dodge bool is {}", Config::Settings::step_dodge.GetValue());
-        REX::DEBUG("step dodge active");
-        a_actor->SetGraphVariableInt("iStep", 2);
-    }
-    else
-        a_actor->SetGraphVariableInt("iStep", 0);
-    REX::DEBUG("step dodge bool is {}", Config::Settings::step_dodge.GetValue());
-
-    CastOnDodgeSpell(a_actor);
-    float iFrames = Config::Settings::i_frame_duration.GetValue();
-
-    RE::TESForm* armo = a_actor->GetWornArmor(RE::BGSBipedObjectForm::BipedObjectSlot::kBody, true);
-    RE::HandleEntryPoint(RE::PerkEntryPoint::kModPowerAttackStamina, a_actor, iFrames, MOD::IFRAME_DURATION_PERK, armo);
-
-    iFrames = std::clamp(iFrames, 0.0f, 3.0f);
-
-    a_actor->SetGraphVariableFloat("TKDR_IframeDuration",
-                                   iFrames); // Set invulnerable frame duration
-    return a_actor->NotifyAnimationGraph(dodge_event);
-}
 
 void ClearBuffer()
 {

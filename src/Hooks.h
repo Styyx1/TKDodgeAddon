@@ -1,11 +1,5 @@
 #pragma once
 
-#include "RE/B/ButtonEvent.h"
-#include "RE/J/JumpHandler.h"
-#include "RE/Offsets_VTABLE.h"
-#include "RE/P/PlayerCharacter.h"
-#include "RE/P/PlayerControlsData.h"
-#include "REL/Hook.h"
 namespace Hooks
 {
 struct SprintHandlerHook
@@ -13,14 +7,14 @@ struct SprintHandlerHook
 
   private:
     static void ProcessButton(RE::SprintHandler* a_this, RE::ButtonEvent* a_event, RE::PlayerControlsData* a_data);
-    inline static REL::HookVFT _sprintHandlerHook{RE::VTABLE_SprintHandler[0], 0x4, ProcessButton};
+    inline static REL::HookVFT _sprintHandlerHook{RE::VTABLE_SprintHandler[0], 0x6, ProcessButton};
 };
 
 struct SneakHandlerHook
 {
   private:
     static void ProcessButton(RE::SneakHandler* a_this, RE::ButtonEvent* a_event, RE::PlayerControlsData* a_data);
-    inline static REL::HookVFT _sneakHandlerHook{RE::VTABLE_SneakHandler[0], 0x4, ProcessButton};
+    inline static REL::HookVFT _sneakHandlerHook{RE::VTABLE_SneakHandler[0], 0x6, ProcessButton};
 };
 
 struct PlayerUpdateLoop
@@ -33,7 +27,7 @@ struct PlayerUpdateLoop
 struct MainUpdateLoop
 {
     static void MainUpdate(float a_delta);
-    inline static REL::Hook _mainUpdateLoopHook{REL::ID(36564), 0xc26, MainUpdate};
+    inline static REL::Hook _mainUpdateLoopHook{REL::ID(36564), 0xC38, MainUpdate};
 };
 
 

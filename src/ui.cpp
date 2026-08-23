@@ -1,4 +1,4 @@
-#include "ui.h"
+/* #include "ui.h"
 #include "Settings.h"
 #include "Utility.h"
 
@@ -260,3 +260,4 @@ void __stdcall Menu::Settings::RenderSettings()
     
     FontAwesome::Pop();
 }
+ */

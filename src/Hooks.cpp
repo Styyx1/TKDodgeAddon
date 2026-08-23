@@ -1,6 +1,6 @@
 #include "Hooks.h"
 
-#include "RE/P/PlayerCharacter.h"
+
 #include "Settings.h"
 #include "Utility.h"
 #include "dodging.h"

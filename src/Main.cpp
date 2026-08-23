@@ -1,31 +1,31 @@
+#include "AnimationEvents.h"
 #include "InputEvents.h"
 #include "Settings.h"
 #include "ui.h"
-#include "AnimationEvents.h"
 
 bool showed = false;
-void Listener(SKSE::MessagingInterface::Message *a_msg)
+void Listener(SKSE::MessagingInterface::Message* a_msg)
 {
     switch (a_msg->type)
     {
-    case SKSE::MessagingInterface::kInputLoaded:
-        Events::InputEvent::GetSingleton()->RegisterInput();
-        break;
-    case SKSE::MessagingInterface::kDataLoaded:
-        animEventHandler::RegisterForPlayer();
-        Config::Forms::LoadForms();
-        break;
-    default:
-        break;
+        case SKSE::MessagingInterface::kInputLoaded:
+            Events::InputEvent::GetSingleton()->RegisterInput();
+            break;
+        case SKSE::MessagingInterface::kDataLoaded:
+            // animEventHandler::RegisterForPlayer();
+            Config::Forms::LoadForms();
+            break;
+        default:
+            break;
     }
 }
 
-SKSEPluginLoad(const SKSE::LoadInterface *skse)
+SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {
     Init(skse, {.trampoline = true});
 
     Config::Settings::UpdateSettings(false);
-    Menu::RegisterDodgeMenu();
+    /* Menu::RegisterDodgeMenu(); */
     if (const auto messaging{SKSE::GetMessagingInterface()}; !messaging->RegisterListener(Listener))
     {
         return false;

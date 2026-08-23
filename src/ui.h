@@ -1,4 +1,4 @@
-#pragma once
+/* #pragma once
 #include <st-ui.h>
 
 namespace Menu
@@ -171,3 +171,4 @@ void __stdcall RenderSettings();
 
 } // namespace Settings
 } // namespace Menu
+ */

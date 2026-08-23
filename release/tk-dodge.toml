@@ -1,0 +1,31 @@
+[Settings]
+
+bEnableSneakKeyDodge = false
+bEnableDodgeInPlace = false
+bStepDodge = false
+bEnableSneakDodge = false
+bEnableDodgeAttackCancel = true
+bOnlyCancelLightAttacks = false
+bUseDoubleTap = false
+bDisableInThird = false
+bUseSprintKey = false
+bUseMCORecoverWindow = false
+bUsePerkLock = false
+bUsePercentageCost = false
+bRemoveForwardDodge = false
+
+fIFrameDuration = 0.3
+fSprintingPressDuration = 0.3
+fSneakingPressDuration = 0.3
+fDodgeCost = 15.0
+
+# Get the correct keycodes here: 
+#                               https://ck.uesp.net/wiki/Input_Script
+uDodgeKey = 245
+
+sDefaultDodgeEvent = "TKDodgeBack"
+
+[Forms]
+sOnDodgeSpellID = "OnDodgeDummySpell"
+sDodgeRequiredPerkID = "TKDodgeAddon.esp|0x809"
+sOnDodgeSpellRequiredPerkID = "TKDodgeAddon.esp|0x80F"

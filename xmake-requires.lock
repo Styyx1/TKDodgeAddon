@@ -8,13 +8,13 @@
             },
             version = "4.3.4"
         },
-        ["glaze#f56260b5"] = {
+        ["glaze v7.0.0#f56260b5"] = {
             repo = {
                 branch = "master",
                 commit = "868b0162b8070d3f8fa30fc0d00b3e0e32d605c3",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
-            version = "v7.9.0"
+            version = "v7.0.0"
         },
         ["ninja#f56260b5"] = {
             repo = {
@@ -24,15 +24,15 @@
             },
             version = "v1.13.2"
         },
-        ["spdlog#09c8c173"] = {
+        ["spdlog v1.16.0#09c8c173"] = {
             repo = {
                 branch = "master",
                 commit = "868b0162b8070d3f8fa30fc0d00b3e0e32d605c3",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
-            version = "v1.17.0"
+            version = "v1.16.0"
         },
-        ["toml11#f56260b5"] = {
+        ["toml11 v4.4.0#f56260b5"] = {
             repo = {
                 branch = "master",
                 commit = "868b0162b8070d3f8fa30fc0d00b3e0e32d605c3",
