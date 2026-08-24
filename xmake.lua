@@ -23,6 +23,8 @@ add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
 set_policy("build.optimization.lto", true)
 set_policy("package.requires_lock", true)
 
+set_encodings("utf-8") -- msvc: /utf-8
+set_encodings("source:utf-8", "target:utf-8")
 
 -- set configs
 set_config("skyrim_ae", true)

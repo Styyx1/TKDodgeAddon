@@ -1,4 +1,7 @@
 #include "ui.h"
+
+#include <CLIBUtil/hotkeys.hpp>
+
 #include "Settings.h"
 #include "Utility.h"
 
@@ -12,31 +15,31 @@ void RegisterDodgeMenu()
     }
     SKSEMenuFramework::SetSection(Titles::MOD_TITLE);
     SKSEMenuFramework::AddSectionItem(Titles::SETTINGS_SEC, Settings::RenderSettings);
-    SKSEMenuFramework::AddInputEvent(Settings::OnInput);
     RestoreFromSettings();
+    SKSEMenuFramework::AddInputEvent(Settings::OnInput);
 }
 void RestoreFromSettings()
 {
     using set = Config::Settings;
     using namespace Menu::Settings::Var;
 
-    enable_sneak_key_dodge = set::enable_sneak_key_dodge.GetValue();
-    enable_dodge_in_place = set::enable_dodge_in_place.GetValue();
-    step_dodge = set::step_dodge.GetValue();
-    enable_sneak_dodge = set::enable_sneak_dodge.GetValue();
+    enable_sneak_key_dodge     = set::enable_sneak_key_dodge.GetValue();
+    enable_dodge_in_place      = set::enable_dodge_in_place.GetValue();
+    step_dodge                 = set::step_dodge.GetValue();
+    enable_sneak_dodge         = set::enable_sneak_dodge.GetValue();
     enable_dodge_attack_cancel = set::enable_dodge_attack_cancel.GetValue();
-    only_cancel_light = set::only_cancel_light.GetValue();
-    i_frame_duration = set::i_frame_duration.GetValue();
-    default_dodge_event = set::default_dodge_event.GetValue();
-    sprinting_press_duration = set::sprinting_press_duration.GetValue();
-    sneaking_press_duration = set::sneaking_press_duration.GetValue();
+    only_cancel_light          = set::only_cancel_light.GetValue();
+    i_frame_duration           = set::i_frame_duration.GetValue();
+    default_dodge_event        = set::default_dodge_event.GetValue();
+    sprinting_press_duration   = set::sprinting_press_duration.GetValue();
+    sneaking_press_duration    = set::sneaking_press_duration.GetValue();
 
-    dodge_cost = set::dodge_cost.GetValue();
-    dodge_key = set::dodge_key.GetValue();
-    use_sprint_key = set::use_sprint_key.GetValue();
+    dodge_cost             = set::dodge_cost.GetValue();
+    dodge_key              = set::dodge_key.GetValue();
+    use_sprint_key         = set::use_sprint_key.GetValue();
     use_mco_recover_window = set::use_mco_recover_window.GetValue();
 
-    use_perk_lock = set::use_perk_lock.GetValue();
+    use_perk_lock       = set::use_perk_lock.GetValue();
     use_percentage_cost = set::use_percentage_cost.GetValue();
 
     use_double_tap = set::use_double_tap.GetValue();
@@ -46,31 +49,31 @@ void ResetDefaults()
     using set = Config::Settings;
     using namespace Menu::Settings::Var;
 
-    enable_sneak_key_dodge = false;
-    enable_dodge_in_place = true;
-    step_dodge = false;
-    enable_sneak_dodge = false;
+    enable_sneak_key_dodge     = false;
+    enable_dodge_in_place      = true;
+    step_dodge                 = false;
+    enable_sneak_dodge         = false;
     enable_dodge_attack_cancel = true;
-    use_sprint_key = false;
-    use_mco_recover_window = false;
-    use_perk_lock = false;
-    use_percentage_cost = false;
-    use_double_tap = false;
-    only_cancel_light = false;
+    use_sprint_key             = false;
+    use_mco_recover_window     = false;
+    use_perk_lock              = false;
+    use_percentage_cost        = false;
+    use_double_tap             = false;
+    only_cancel_light          = false;
 
-    i_frame_duration = 0.3f;
+    i_frame_duration         = 0.3f;
     sprinting_press_duration = 0.5f;
-    sneaking_press_duration = 0.5f;
-    dodge_cost = 15.0f;
+    sneaking_press_duration  = 0.5f;
+    dodge_cost               = 15.0f;
 
-    dodge_perk_form_ID = 0;
-    on_dodge_spell_form_ID = 0;
+    dodge_perk_form_ID      = 0;
+    on_dodge_spell_form_ID  = 0;
     spell_lock_perk_form_ID = 0;
 
     default_dodge_event = "TKDodgeForward";
-    dodge_key = 274;
-    perk_mod_name = "";
-    spell_mod_name = "";
+    dodge_key           = 274;
+    perk_mod_name       = "";
+    spell_mod_name      = "";
 
     set::enable_sneak_key_dodge.SetValue(enable_sneak_key_dodge);
     set::enable_dodge_in_place.SetValue(enable_dodge_in_place);
@@ -122,11 +125,21 @@ void Menu::Settings::DrawHotkeyConfigUI()
     }
     else
     {
-        std::string key_name = hotkeys::details::GetNameByKey(Config::Settings::dodge_key.GetValue()).data();
-        // not really needed but looks better in the menu
-        std::transform(key_name.begin(), key_name.end(), key_name.begin(), ::toupper);
+        const auto key_name = clib_util::hotkeys::details::GetNameByKey(Var::dodge_key);
 
-        ImGuiMCP::Text(std::format("Hotkey: {}", key_name).c_str());
+        if (key_name.empty())
+        {
+            Text("Hotkey: Invalid (%u)", Var::dodge_key);
+        }
+        else
+        {
+            std::string display_name{key_name};
+
+            std::ranges::transform(display_name, display_name.begin(),
+                                   [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+
+            Text("Hotkey: %s", display_name.c_str());
+        }
     }
 
     SameLine();
@@ -137,7 +150,7 @@ void Menu::Settings::DrawHotkeyConfigUI()
         {
 
             capture_key_input = true;
-            Var::dodge_key = 0;
+            Var::dodge_key    = 1;
         }
         SameLine();
         ux::HelpMarker("Press the desired key to rebind the visibility toggle");
@@ -150,13 +163,13 @@ void Menu::Settings::DrawHotkeyConfigUI()
         if (Button("Cancel"))
         {
             capture_key_input = false;
-            Var::dodge_key = Config::Settings::dodge_key.GetValue();
+            Var::dodge_key    = Config::Settings::dodge_key.GetValue();
         }
         SameLine();
         if (Button("Unbind"))
         {
             capture_key_input = false;
-            Var::dodge_key = 1;
+            Var::dodge_key    = 1;
         }
     }
     if (Var::dodge_key != 0)
@@ -183,19 +196,21 @@ bool __stdcall Menu::Settings::OnInput(RE::InputEvent* event)
 
             uint32_t key = button->GetIDCode();
 
-            switch (button->GetDevice()) {
-            case RE::INPUT_DEVICE::kMouse:
-                key += SKSE::InputMap::kMacro_MouseButtonOffset;
-                break;
-            case RE::INPUT_DEVICE::kGamepad:
-                key = SKSE::InputMap::GamepadMaskToKeycode(key);
-                break;
-            default:
-                break;
+            switch (button->GetDevice())
+            {
+                case RE::INPUT_DEVICE::kMouse:
+                    key += SKSE::InputMap::kMacro_MouseButtonOffset;
+                    break;
+                case RE::INPUT_DEVICE::kGamepad:
+                    key = SKSE::InputMap::GamepadMaskToKeycode(key);
+                    break;
+                default:
+                    break;
             }
             // if left mouse button, set the key to 1 to safely unbind it.
             // Setting it to 0 causes crashes later on for some reason
-            // this means left mouse button is not a possible dodge key but that's a fair trade off in order to have an unbind button
+            // this means left mouse button is not a possible dodge key but that's a fair trade off in order to have an
+            // unbind button
             if (key == 256)
             {
                 Var::dodge_key = 1;
@@ -241,9 +256,11 @@ void __stdcall Menu::Settings::RenderSettings()
     SettingCheckbox(Label::use_percentage_cost.c_str(), Var::use_percentage_cost, set::use_percentage_cost,
                     Tool::use_percentage_cost.c_str());
     SameLine();
-    SettingCheckbox(Label::use_double_tap.c_str(), Var::use_double_tap, set::use_double_tap, Tool::use_double_tap.c_str());
+    SettingCheckbox(Label::use_double_tap.c_str(), Var::use_double_tap, set::use_double_tap,
+                    Tool::use_double_tap.c_str());
 
-    SettingCheckbox(Label::only_cancel_light.c_str(), Var::only_cancel_light, set::only_cancel_light,Tool::only_cancel_light.c_str());
+    SettingCheckbox(Label::only_cancel_light.c_str(), Var::only_cancel_light, set::only_cancel_light,
+                    Tool::only_cancel_light.c_str());
 
 
     SettingSlider(Label::i_frame_duration.c_str(), Var::i_frame_duration, 0.0f, 4.0f, "%.2f sec", set::i_frame_duration,
@@ -257,6 +274,6 @@ void __stdcall Menu::Settings::RenderSettings()
 
     DrawHotkeyConfigUI();
     RenderSystem();
-    
+
     FontAwesome::Pop();
 }
