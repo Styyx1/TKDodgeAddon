@@ -15,8 +15,8 @@ void RegisterDodgeMenu()
     }
     SKSEMenuFramework::SetSection(Titles::MOD_TITLE);
     SKSEMenuFramework::AddSectionItem(Titles::SETTINGS_SEC, Settings::RenderSettings);
-    RestoreFromSettings();
     SKSEMenuFramework::AddInputEvent(Settings::OnInput);
+    RestoreFromSettings();
 }
 void RestoreFromSettings()
 {
@@ -150,7 +150,7 @@ void Menu::Settings::DrawHotkeyConfigUI()
         {
 
             capture_key_input = true;
-            Var::dodge_key    = 1;
+            Var::dodge_key    = 0;
         }
         SameLine();
         ux::HelpMarker("Press the desired key to rebind the visibility toggle");
