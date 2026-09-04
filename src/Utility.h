@@ -58,7 +58,7 @@ inline bool isJumping(const RE::Actor* a_actor)
 
 inline bool IsInMenu()
 {
-    return StyyxUtil::MenuUtil::IsAnyOfMenuOpen(Config::Forms::GetSingleton()->MenuNames);
+    return StyyxUtil::MenuUtil::IsAnyOfMenuOpen(Dodge::FORMS::MenuNames);
 }
 
 }; // namespace Utility

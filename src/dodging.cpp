@@ -1,7 +1,6 @@
 #include "dodging.h"
 
 #include "API/PerkEntryPointExtenderAPI.h"
-
 #include "Settings.h"
 #include "Utility.h"
 #include "mod-data.h"
@@ -13,12 +12,13 @@ static DoublePress dodgeDoublePress;
 
 void OnInput()
 {
+    REX::INFO("dodge input was pressed");
     if (Utility::IsInMenu())
         return;
     if (g_menuBlocker.active())
         return;
 
-    if (Config::Settings::use_double_tap.GetValue())
+    if (CONF::use_double_tap.GetValue())
     {
         if (dodgeDoublePress.on_key_pressed())
         {
@@ -69,16 +69,16 @@ bool DoDodge(RE::Actor* a_actor)
         return false;
     }
 
-    std::string dodge_event = Config::Settings::default_dodge_event.GetValue();
+    std::string dodge_event = CONF::default_dodge_event.GetValue();
     const auto result       = GetDodgeEvent(dodge_event);
 
     if (result == DodgeEventResult::kForwardBlocked)
         return false;
 
-    if (result == DodgeEventResult::kNoDirection && !Config::Settings::enable_dodge_in_place.GetValue())
+    if (result == DodgeEventResult::kNoDirection && !CONF::enable_dodge_in_place.GetValue())
         return false;
 
-    if (Config::Settings::step_dodge.GetValue())
+    if (CONF::step_dodge.GetValue())
     {
         a_actor->SetGraphVariableInt("iStep", 2);
     }
@@ -86,10 +86,10 @@ bool DoDodge(RE::Actor* a_actor)
         a_actor->SetGraphVariableInt("iStep", 0);
 
     CastOnDodgeSpell(a_actor);
-    float iFrames = Config::Settings::i_frame_duration.GetValue();
+    float iFrames = CONF::i_frame_duration.GetValue();
 
     RE::TESForm* armo = a_actor->GetWornArmor(RE::BGSBipedObjectForm::BipedObjectSlot::kBody, true);
-    RE::HandleEntryPoint(RE::PerkEntryPoint::kModPowerAttackStamina, a_actor, iFrames, MOD::IFRAME_DURATION_PERK, armo);
+    RE::HandleEntryPoint(RE::PerkEntryPoint::kModPowerAttackStamina, a_actor, iFrames, IFRAME_DURATION_PERK, armo);
 
     iFrames = std::clamp(iFrames, 0.0f, 3.0f);
 
@@ -99,10 +99,9 @@ bool DoDodge(RE::Actor* a_actor)
     return a_actor->NotifyAnimationGraph(dodge_event);
 };
 
-DodgeResult PerkCheck(const RE::Actor* a_actor)
+DodgeResult PerkCheck(RE::Actor* a_actor)
 {
-    using namespace Config;
-    if (!Settings::use_perk_lock.GetValue())
+    if (!CONF::use_perk_lock.GetValue())
     {
         return DodgeResult::kSuccess;
     }
@@ -113,13 +112,13 @@ DodgeResult PerkCheck(const RE::Actor* a_actor)
     }
 
     RE::BGSPerk* perk{};
-    if (Forms::ActualDodgePerk)
+    if (FORMS::ActualDodgePerk)
     {
-        perk = Forms::ActualDodgePerk;
+        perk = FORMS::ActualDodgePerk;
     }
     if (!perk)
     {
-        perk = Forms::DodgePerkDummy;
+        perk = FORMS::DodgePerkDummy;
     }
     if (perk && a_actor->HasPerk(perk))
     {
@@ -129,7 +128,7 @@ DodgeResult PerkCheck(const RE::Actor* a_actor)
     return DodgeResult::kHasNoPerk;
 }
 
-DodgeResult IsDodging(const RE::Actor* a_actor)
+DodgeResult IsDodging(RE::Actor* a_actor)
 {
     if (bool bIsDodging = false; a_actor->GetGraphVariableBool("bIsDodging", bIsDodging) && !bIsDodging)
     {
@@ -138,9 +137,9 @@ DodgeResult IsDodging(const RE::Actor* a_actor)
     return DodgeResult::kIsDodging;
 }
 
-bool IsInMCORecovery(const RE::Actor* a_actor)
+bool IsInMCORecovery(RE::Actor* a_actor)
 {
-    if (!Config::Settings::use_mco_recover_window.GetValue())
+    if (!CONF::use_mco_recover_window.GetValue())
         return true;
 
     bool enabled               = false;
@@ -158,8 +157,8 @@ float CalculateDodgeCost(RE::Actor* a_actor)
     float dodgeCostModifier = 1.0;
     float extraDodgeCostMod = 1.0;
 
-    const auto cost_modifierAV  = RE::ActorValueList::LookupActorValueByName(MOD::USED_AV.data());
-    const auto stag_cost_mod_AV = RE::ActorValueList::LookupActorValueByName(MOD::EXTRA_DODGE_AV.data());
+    const auto cost_modifierAV  = RE::ActorValueList::LookupActorValueByName(USED_AV);
+    const auto stag_cost_mod_AV = RE::ActorValueList::LookupActorValueByName(EXTRA_DODGE_AV);
 
     if (cost_modifierAV != RE::ActorValue::kNone && cost_modifierAV != RE::ActorValue::kTotal)
     {
@@ -169,10 +168,10 @@ float CalculateDodgeCost(RE::Actor* a_actor)
     {
         extraDodgeCostMod = a_actor->GetActorValue(stag_cost_mod_AV);
     }
-    float dodge_cost = Config::Settings::dodge_cost.GetValue();
+    float dodge_cost = CONF::dodge_cost.GetValue();
     float cost       = dodge_cost;
 
-    if (Config::Settings::use_percentage_cost.GetValue())
+    if (CONF::use_percentage_cost.GetValue())
     {
         const auto max_stam = a_actor->GetBaseActorValue(RE::ActorValue::kStamina);
         cost                = ((max_stam / 100) * dodge_cost) * dodgeCostModifier * extraDodgeCostMod;
@@ -183,7 +182,7 @@ float CalculateDodgeCost(RE::Actor* a_actor)
     }
     RE::TESForm* armo = a_actor->GetWornArmor(RE::BGSBipedObjectForm::BipedObjectSlot::kBody, true);
 
-    RE::HandleEntryPoint(RE::PerkEntryPoint::kModPowerAttackStamina, a_actor, cost, MOD::DODGE_COST_PERK, armo);
+    RE::HandleEntryPoint(RE::PerkEntryPoint::kModPowerAttackStamina, a_actor, cost, DODGE_COST_PERK, armo);
 
     return cost;
 }
@@ -205,8 +204,7 @@ DodgeEventResult GetDodgeEvent(std::string& a_event)
         return DodgeEventResult::kNoDirection;
     }
 
-    if (Config::Forms::TDMGlobal && Config::Forms::TDMGlobal->Is(RE::FormType::Global) &&
-        Config::Forms::TDMGlobal->value != 0)
+    if (FORMS::TDMGlobal && FORMS::TDMGlobal->Is(RE::FormType::Global) && FORMS::TDMGlobal->value != 0)
     {
         a_event = "TKDodgeForward";
     }
@@ -216,7 +214,7 @@ DodgeEventResult GetDodgeEvent(std::string& a_event)
         if (const float dodgeAngle = Utility::GetAngle(normalizedInputDirection, forwardVector);
             dodgeAngle >= -2 * PI8 && dodgeAngle < 2 * PI8)
         {
-            if (Config::Settings::remove_forward.GetValue())
+            if (CONF::remove_forward.GetValue())
                 return DodgeEventResult::kForwardBlocked;
             a_event = "TKDodgeForward";
         }
@@ -240,20 +238,20 @@ void CastOnDodgeSpell(RE::Actor* a_actor)
 {
     RE::BGSPerk* lockPerk;
 
-    if (!Config::Forms::SpellLockPerk)
+    if (!FORMS::SpellLockPerk)
     {
-        lockPerk = Config::Forms::dummySpellLockPerk;
+        lockPerk = FORMS::dummySpellLockPerk;
     }
     else
-        lockPerk = Config::Forms::SpellLockPerk;
+        lockPerk = FORMS::SpellLockPerk;
 
     RE::SpellItem* dodgeSpell;
-    if (!Config::Forms::onDodgeSpell)
+    if (!FORMS::onDodgeSpell)
     {
-        dodgeSpell = Config::Forms::dummyDodgeSpell;
+        dodgeSpell = FORMS::dummyDodgeSpell;
     }
     else
-        dodgeSpell = Config::Forms::onDodgeSpell;
+        dodgeSpell = FORMS::onDodgeSpell;
 
     if (a_actor && lockPerk && dodgeSpell && a_actor->HasPerk(lockPerk))
     {
@@ -261,10 +259,10 @@ void CastOnDodgeSpell(RE::Actor* a_actor)
     }
 }
 
-bool CanAttackCancel(const RE::Actor* a_actor)
+bool CanAttackCancel(RE::Actor* a_actor)
 {
-    const bool cancel_enabled    = Config::Settings::enable_dodge_attack_cancel.GetValue();
-    const bool only_light_cancel = Config::Settings::only_cancel_light.GetValue();
+    const bool cancel_enabled    = CONF::enable_dodge_attack_cancel.GetValue();
+    const bool only_light_cancel = CONF::only_cancel_light.GetValue();
 
     if (cancel_enabled)
     {
@@ -277,7 +275,7 @@ bool CanAttackCancel(const RE::Actor* a_actor)
     return false;
 }
 
-DodgeResult IsInAttackState(const RE::Actor* a_actor)
+DodgeResult IsInAttackState(RE::Actor* a_actor)
 {
     if (const auto attackState = a_actor->GetAttackState();
         attackState == RE::ATTACK_STATE_ENUM::kNone || CanAttackCancel(a_actor))
@@ -287,7 +285,7 @@ DodgeResult IsInAttackState(const RE::Actor* a_actor)
     return DodgeResult::kIsAttacking;
 }
 
-DodgeResult IsSprinting(const RE::Actor* a_actor)
+DodgeResult IsSprinting(RE::Actor* a_actor)
 {
     if (!a_actor->IsSprinting())
     {
@@ -296,15 +294,15 @@ DodgeResult IsSprinting(const RE::Actor* a_actor)
     return DodgeResult::kIsSprinting;
 }
 
-DodgeResult IsSneaking(const RE::Actor* a_actor)
+DodgeResult IsSneaking(RE::Actor* a_actor)
 {
-    if (!a_actor->IsSneaking() || Config::Settings::enable_sneak_dodge.GetValue())
+    if (!a_actor->IsSneaking() || CONF::enable_sneak_dodge.GetValue())
     {
         return DodgeResult::kSuccess;
     }
     return DodgeResult::kIsSneaking;
 }
-DodgeResult IsSwimming(const RE::Actor* a_actor)
+DodgeResult IsSwimming(RE::Actor* a_actor)
 {
     if (!a_actor->IsSwimming())
     {
@@ -313,7 +311,7 @@ DodgeResult IsSwimming(const RE::Actor* a_actor)
     return DodgeResult::kIsSwimming;
 }
 
-DodgeResult IsInKillMove(const RE::Actor* a_actor)
+DodgeResult IsInKillMove(RE::Actor* a_actor)
 {
     if (!a_actor->IsInKillMove())
     {
@@ -322,7 +320,7 @@ DodgeResult IsInKillMove(const RE::Actor* a_actor)
     return DodgeResult::kIsInKillMove;
 }
 
-bool IsInGodModeHelper(const RE::Actor* a_actor)
+bool IsInGodModeHelper(RE::Actor* a_actor)
 {
     if (a_actor->IsPlayerRef() && RE::PlayerCharacter::IsGodMode())
     {
@@ -331,7 +329,7 @@ bool IsInGodModeHelper(const RE::Actor* a_actor)
     return false;
 }
 
-DodgeResult IsInMenu(const RE::Actor* a_actor)
+DodgeResult IsInMenu(RE::Actor* a_actor)
 {
     if (!a_actor->IsPlayerRef())
     {
@@ -345,7 +343,7 @@ DodgeResult IsInMenu(const RE::Actor* a_actor)
     return DodgeResult::kIsInMenu;
 }
 
-DodgeResult IsControlsDisabled(const RE::Actor* a_actor)
+DodgeResult IsControlsDisabled(RE::Actor* a_actor)
 {
     if (!a_actor->IsPlayerRef())
     {
@@ -362,9 +360,9 @@ DodgeResult IsControlsDisabled(const RE::Actor* a_actor)
     return DodgeResult::kIsControlsDisabled;
 }
 
-DodgeResult IsInWrongState(const RE::Actor* a_actor)
+DodgeResult IsInWrongState(RE::Actor* a_actor)
 {
-    if (Config::Settings::disable_in_third.GetValue() && a_actor->IsPlayerRef() &&
+    if (CONF::disable_in_third.GetValue() && a_actor->IsPlayerRef() &&
         RE::PlayerCamera::GetSingleton()->IsInThirdPerson())
     {
         return DodgeResult::kIsInWrongState;
@@ -392,7 +390,7 @@ DodgeResult HasStamina(RE::Actor* a_actor)
     return DodgeResult::kStamina;
 }
 
-DodgeResult IsOverencumbered(const RE::Actor* a_actor)
+DodgeResult IsOverencumbered(RE::Actor* a_actor)
 {
     if (IsInGodModeHelper(a_actor))
     {
@@ -405,7 +403,7 @@ DodgeResult IsOverencumbered(const RE::Actor* a_actor)
     return DodgeResult::kOverencumbered;
 }
 
-DodgeResult IsJumping(const RE::Actor* a_actor)
+DodgeResult IsJumping(RE::Actor* a_actor)
 {
     if (!Utility::isJumping(a_actor))
     {

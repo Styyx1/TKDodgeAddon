@@ -1,7 +1,8 @@
 #include "AnimationEvents.h"
 #include "InputEvents.h"
 #include "Settings.h"
-#include "ui.h"
+#include "menu/sksemenu.h"
+
 
 bool showed = false;
 void Listener(SKSE::MessagingInterface::Message* a_msg)
@@ -9,22 +10,22 @@ void Listener(SKSE::MessagingInterface::Message* a_msg)
     switch (a_msg->type)
     {
         case SKSE::MessagingInterface::kInputLoaded:
-            Events::InputEvent::GetSingleton()->RegisterInput();
+            REX::TSingleton<Dodge::InputEvent>::GetSingleton()->RegisterInput();
             break;
         case SKSE::MessagingInterface::kDataLoaded:
-            // animEventHandler::RegisterForPlayer();
-            Config::Forms::LoadForms();
+            Dodge::FORMS::LoadForms();
+            Dodge::MENU::SKSEMENU::RegisterSKSEMenu();
             break;
         default:
             break;
     }
 }
 
-SKSEPluginLoad(const SKSE::LoadInterface* skse)
+SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* skse)
 {
     Init(skse, {.trampoline = true});
 
-    Config::Settings::UpdateSettings(false);
+    Dodge::CONF::UpdateSettings();
     /* Menu::RegisterDodgeMenu(); */
     if (const auto messaging{SKSE::GetMessagingInterface()}; !messaging->RegisterListener(Listener))
     {

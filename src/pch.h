@@ -7,7 +7,7 @@
 
 #include <CLIBUtil/utils.hpp>
 #include <REL/Relocation.h>
-#include <REX/REX/TOML.h>
+#include <REX/REX.h>
 #include <styyx-utils.h>
 
 #undef ERROR

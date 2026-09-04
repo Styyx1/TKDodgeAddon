@@ -15,7 +15,7 @@ static bool bStopJump       = false;
 void SprintHandlerHook::ProcessButton(RE::SprintHandler* a_this, RE::ButtonEvent* a_event,
                                       RE::PlayerControlsData* a_data)
 {
-    if (Config::Settings::use_sprint_key.GetValue())
+    if (Dodge::CONF::use_sprint_key.GetValue())
     {
         const auto playerCharacter = RE::PlayerCharacter::GetSingleton();
         const auto userEvent       = a_event->QUserEvent();
@@ -26,7 +26,7 @@ void SprintHandlerHook::ProcessButton(RE::SprintHandler* a_this, RE::ButtonEvent
             { // stopping sprint
                 bStoppingSprint = true;
             }
-            else if (a_event->HeldDuration() < Config::Settings::sprinting_press_duration.GetValue())
+            else if (a_event->HeldDuration() < Dodge::CONF::sprinting_press_duration.GetValue())
             {
                 if (a_event->IsUp())
                 {
@@ -52,7 +52,7 @@ void SprintHandlerHook::ProcessButton(RE::SprintHandler* a_this, RE::ButtonEvent
 
 void SneakHandlerHook::ProcessButton(RE::SneakHandler* a_this, RE::ButtonEvent* a_event, RE::PlayerControlsData* a_data)
 {
-    if (Config::Settings::enable_sneak_key_dodge.GetValue())
+    if (Dodge::CONF::enable_sneak_key_dodge.GetValue())
     {
         const auto playerCharacter = RE::PlayerCharacter::GetSingleton();
         const auto userEvent       = a_event->QUserEvent();
@@ -63,7 +63,7 @@ void SneakHandlerHook::ProcessButton(RE::SneakHandler* a_this, RE::ButtonEvent* 
             { // stopping sneak
                 bStopSneak = true;
             }
-            else if (a_event->HeldDuration() < Config::Settings::sneaking_press_duration.GetValue())
+            else if (a_event->HeldDuration() < Dodge::CONF::sneaking_press_duration.GetValue())
             {
                 if (a_event->IsUp())
                 {

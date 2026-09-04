@@ -3,9 +3,8 @@
 #include "Settings.h"
 #include "Utility.h"
 #include "dodging.h"
-#include "ui.h"
 
-namespace Events
+namespace Dodge
 {
 void InputEvent::RegisterInput()
 {
@@ -48,7 +47,7 @@ EventResult InputEvent::ProcessEvent(RE::InputEvent* const* a_event, RE::BSTEven
                 break;
         }
 
-        if (id != Config::Settings::dodge_key.GetValue() || id == 1)
+        if (id != CONF::dodge_key.GetValue() || id == 1)
             continue;
 
         if (!Utility::IsInMenu())
@@ -56,4 +55,4 @@ EventResult InputEvent::ProcessEvent(RE::InputEvent* const* a_event, RE::BSTEven
     }
     return EventResult::kContinue;
 }
-} // namespace Events
+} // namespace Dodge

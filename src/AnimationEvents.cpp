@@ -11,11 +11,8 @@ EventResult AnimEventHandler::ProcessEvent_PC(RE::BSTEventSink<RE::BSAnimationGr
 {
     const auto player = RE::PlayerCharacter::GetSingleton();
 
-    REX::INFO("inside hooked animhandler");
-
     if (a_event->tag == "TKDR_DodgeStart")
     {
-        REX::INFO("Try to get player and apply cost to him");
         if (player)
             Dodge::ApplyDodgeCostActor(player);
     }

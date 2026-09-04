@@ -7,12 +7,13 @@ includes("extern/styyx-utils")
 
 -- set project
 set_project("TK_Dodge_RE")
-set_version("3.2.0")
+set_version("3.3.0")
 set_license("GPL-3.0")
 
 -- set defaults
 set_languages("c++23")
 set_warnings("allextra")
+set_encodings("utf-8")
 
 -- add rules
 add_rules("mode.debug", "mode.releasedbg")

@@ -170,37 +170,37 @@ struct MenuBlocker
     void block()
     {
         // tie the dodge blocking when a menu closes to the sprint delay instead of hard-coding a value.
-        auto time  = static_cast<int>(Config::Settings::sprinting_press_duration.GetValue() * 1000);
+        auto time  = static_cast<int>(CONF::sprinting_press_duration.GetValue() * 1000);
         blockUntil = Clock::now() + std::chrono::milliseconds(time);
     }
 
     [[nodiscard]] bool active() const { return Clock::now() < blockUntil; }
 };
 static MenuBlocker g_menuBlocker;
-void OnInput();                                        // Called by the 3 input methods
-void Update(RE::Actor* a_actor);                       // Called in the player update loop
-bool CanDodge(RE::Actor* a_actor);                     // main decider if dodge is allowed
-bool DoDodge(RE::Actor* a_actor);                      // do dodge
-void ClearBuffer();                                    // clear input buffer. used if a menu is open
-DodgeResult PerkCheck(const RE::Actor* a_actor);       // check if perk exists and the actor has the perk
-DodgeResult IsDodging(const RE::Actor* a_actor);       // check if actor is already dodging
-DodgeResult IsInAttackState(const RE::Actor* a_actor); // check the attack state of the actor (should be a simple build
-                                                       // in function but i want to return the result
+void OnInput();                                  // Called by the 3 input methods
+void Update(RE::Actor* a_actor);                 // Called in the player update loop
+bool CanDodge(RE::Actor* a_actor);               // main decider if dodge is allowed
+bool DoDodge(RE::Actor* a_actor);                // do dodge
+void ClearBuffer();                              // clear input buffer. used if a menu is open
+DodgeResult PerkCheck(RE::Actor* a_actor);       // check if perk exists and the actor has the perk
+DodgeResult IsDodging(RE::Actor* a_actor);       // check if actor is already dodging
+DodgeResult IsInAttackState(RE::Actor* a_actor); // check the attack state of the actor (should be a simple build
+                                                 // in function but i want to return the result
 DodgeResult IsSprinting(
-    const RE::Actor* a_actor); // check if actor is sprinting. returns the dodge result on top of the built in check
-DodgeResult IsSneaking(const RE::Actor* a_actor);         // check if actor is sneaking. again, with dodge result
-DodgeResult IsSwimming(const RE::Actor* a_actor);         // IsSwimming Check with dodge result
-DodgeResult IsInKillMove(const RE::Actor* a_actor);       // Killmove check with DodgeResult
-DodgeResult IsInMenu(const RE::Actor* a_actor);           // Check if a menu is open. Returns kSuccess if not
-DodgeResult IsControlsDisabled(const RE::Actor* a_actor); // Success if controls are enabled
-DodgeResult IsInWrongState(const RE::Actor* a_actor);     // Success if actor is in a state that allows for dodging
-DodgeResult HasStamina(RE::Actor* a_actor); // success if actor has enough stamina or actor is player in god mode
-DodgeResult IsOverencumbered(const RE::Actor* a_actor); // success if not overencumbered
-DodgeResult IsJumping(const RE::Actor* a_actor);        // kSuccess if actor is not jumping
-DodgeResult GetDodgeResult(RE::Actor* a_actor);         // get total dodge result
-bool IsInGodModeHelper(const RE::Actor* a_actor);
-bool CanAttackCancel(const RE::Actor* a_actor);
-bool IsInMCORecovery(const RE::Actor* a_actor);
+    RE::Actor* a_actor); // check if actor is sprinting. returns the dodge result on top of the built in check
+DodgeResult IsSneaking(RE::Actor* a_actor);         // check if actor is sneaking. again, with dodge result
+DodgeResult IsSwimming(RE::Actor* a_actor);         // IsSwimming Check with dodge result
+DodgeResult IsInKillMove(RE::Actor* a_actor);       // Killmove check with DodgeResult
+DodgeResult IsInMenu(RE::Actor* a_actor);           // Check if a menu is open. Returns kSuccess if not
+DodgeResult IsControlsDisabled(RE::Actor* a_actor); // Success if controls are enabled
+DodgeResult IsInWrongState(RE::Actor* a_actor);     // Success if actor is in a state that allows for dodging
+DodgeResult HasStamina(RE::Actor* a_actor);       // success if actor has enough stamina or actor is player in god mode
+DodgeResult IsOverencumbered(RE::Actor* a_actor); // success if not overencumbered
+DodgeResult IsJumping(RE::Actor* a_actor);        // kSuccess if actor is not jumping
+DodgeResult GetDodgeResult(RE::Actor* a_actor);   // get total dodge result
+bool IsInGodModeHelper(RE::Actor* a_actor);
+bool CanAttackCancel(RE::Actor* a_actor);
+bool IsInMCORecovery(RE::Actor* a_actor);
 float CalculateDodgeCost(RE::Actor* a_actor);
 void ApplyDodgeCostActor(RE::Actor* a_actor);
 DodgeEventResult GetDodgeEvent(std::string& a_event);
